@@ -3,559 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ice Breaker Game</title>
-    <!-- Favicon link -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <!-- Optional: For modern devices (e.g., Apple Touch Icon) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+    <title>Arctic Explorer | Ice Breaker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        .fade-overlay {
-            position: fixed;
+        body {
+            font-family: 'Raleway', sans-serif;
+            background-image: url('back.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        
+        .frosted-glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .btn-glacial {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 119, 182, 0.3);
+        }
+        
+        .btn-glacial:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 119, 182, 0.4);
+        }
+        
+        .btn-glacial::after {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
         }
-        .fade-overlay.active {
-            opacity: 1;
-            pointer-events: all;
+        
+        .btn-glacial:hover::after {
+            transform: translateX(100%);
         }
-        .question-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            max-width: 90%;
-            width: 600px;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-        .fade-overlay.active .question-card {
-            transform: translateY(0);
-        }
-        .topic-btn:hover .topic-icon {
-            transform: scale(1.1);
-            transition: transform 0.3s ease;
+        
+        .ice-crack {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 mb-4">
-                Ice Breaker Game
-            </h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Break the ice with fun, random questions! Click on any topic to get started.
-            </p>
-        </header>
-
-        <!-- Topic Selection -->
-        <div class="max-w-4xl mx-auto">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="topicSelection">
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-users text-purple-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Getting to Know You</h3>
-                        <p class="text-gray-600 mb-4">50 personal questions to learn about each other</p>
-                        <span class="mt-auto bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-laugh-beam text-blue-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Fun & Funny</h3>
-                        <p class="text-gray-600 mb-4">50 hilarious questions to lighten the mood</p>
-                        <span class="mt-auto bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-brain text-green-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Deep Thoughts</h3>
-                        <p class="text-gray-600 mb-4">50 philosophical questions to spark discussion</p>
-                        <span class="mt-auto bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-history text-yellow-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Childhood Memories</h3>
-                        <p class="text-gray-600 mb-4">50 nostalgic questions about growing up</p>
-                        <span class="mt-auto bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-globe-americas text-red-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Travel & Adventure</h3>
-                        <p class="text-gray-600 mb-4">50 questions about places and experiences</p>
-                        <span class="mt-auto bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-random text-indigo-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Random Mix</h3>
-                        <p class="text-gray-600 mb-4">50 completely random questions from all categories</p>
-                        <span class="mt-auto bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-            </div>
+<body class="flex items-center justify-center p-4">
+    <div class="frosted-glass rounded-2xl p-8 md:p-12 max-w-3xl w-full text-center relative overflow-hidden">
+        <!-- Snowflakes decoration -->
+        <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+            <div class="snowflake">❄</div>
+            <div class="snowflake">❄</div>
+            <div class="snowflake">❄</div>
+            <div class="snowflake">❄</div>
+            <div class="snowflake">❄</div>
+            <div class="snowflake">❄</div>
         </div>
-
-        <!-- Question Overlay -->
-        <div class="fade-overlay" id="questionOverlay">
-            <div class="question-card">
-                <div id="topicDisplay" class="inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4"></div>
-                <h3 id="questionText" class="text-2xl md:text-3xl font-medium text-gray-800 mb-8 text-center"></h3>
-                <div class="flex justify-center gap-4">
-                    <button id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full">
-                        Next Question
-                    </button>
-                    <button id="closeBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-full">
-                        Close
-                    </button>
-                </div>
-            </div>
+        
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">ARCTIC EXPLORER</h1>
+        <h2 class="text-xl md:text-2xl text-white mb-8 drop-shadow">Break Through the Ice</h2>
+        
+        <div class="space-y-6 md:space-y-8 relative z-10">
+            <!-- Ice White Button -->
+            <button onclick="navigate('polar')" class="btn-glacial w-full md:w-3/4 mx-auto py-4 px-6 rounded-xl bg-gradient-to-r from-white to-blue-100 text-blue-800 font-semibold text-lg md:text-xl relative">
+                POLAR EXPEDITION
+                <div class="ice-crack"></div>
+            </button>
+            
+            <!-- Sky Blue Button -->
+            <button onclick="navigate('glacier')" class="btn-glacial w-full md:w-3/4 mx-auto py-4 px-6 rounded-xl bg-gradient-to-r from-blue-100 to-blue-300 text-white font-semibold text-lg md:text-xl relative">
+                GLACIER VOYAGE
+                <div class="ice-crack"></div>
+            </button>
+            
+            <!-- Ocean Blue Button -->
+            <button onclick="navigate('ocean')" class="btn-glacial w-full md:w-3/4 mx-auto py-4 px-6 rounded-xl bg-gradient-to-r from-blue-300 to-blue-500 text-white font-semibold text-lg md:text-xl relative">
+                DEEP OCEAN MISSION
+                <div class="ice-crack"></div>
+            </button>
         </div>
-
-        <footer class="text-center text-gray-500 text-sm mt-12">
-            <p>Made with <i class="fas fa-heart text-red-500"></i> for fun conversations</p>
-        </footer>
+        
+        <div class="mt-10 text-white text-sm">
+            <p>Navigate through frozen waters with our ice-breaking adventures</p>
+        </div>
     </div>
 
     <script>
-        // Question database
-        const questions = {
-            "Getting to Know You": [
-                "What's your full name and does it have any special meaning?",
-                "Where were you born and raised?",
-                "What's your favorite childhood memory?",
-                "Do you have any siblings? Tell us about them.",
-                "What's your favorite family tradition?",
-                "What's the most important lesson you learned from your parents?",
-                "What did you want to be when you grew up?",
-                "What's your favorite way to spend a weekend?",
-                "Are you more of a morning person or night owl?",
-                "What's your favorite season and why?",
-                "Do you have any pets? Tell us about them.",
-                "What's your favorite book and why?",
-                "What's your favorite movie of all time?",
-                "What type of music do you enjoy most?",
-                "Do you play any musical instruments?",
-                "What's your favorite hobby or pastime?",
-                "What's something you're really good at?",
-                "What's something you wish you were better at?",
-                "What's your favorite meal of the day?",
-                "What's your favorite cuisine?",
-                "Do you have any food allergies or dietary restrictions?",
-                "What's your favorite dessert?",
-                "Coffee or tea? How do you take it?",
-                "What's your favorite holiday?",
-                "Do you have any phobias or fears?",
-                "What's your favorite scent or fragrance?",
-                "What's your favorite color?",
-                "What's your most used emoji?",
-                "What's your go-to karaoke song?",
-                "What's your favorite board game or card game?",
-                "What's your favorite sport to watch or play?",
-                "What's your favorite app on your phone?",
-                "What's the last show you binge-watched?",
-                "What's your favorite social media platform?",
-                "What's your dream vacation destination?",
-                "What languages do you speak?",
-                "What's your favorite quote or motto?",
-                "What's your biggest pet peeve?",
-                "What's something that always makes you laugh?",
-                "What's your favorite smell in the world?",
-                "What's the best gift you've ever received?",
-                "What's the best gift you've ever given?",
-                "What's your favorite way to relax after a long day?",
-                "What's your favorite type of exercise?",
-                "What's your favorite flower or plant?",
-                "What's your favorite thing about yourself?",
-                "What's something you're proud of accomplishing?",
-                "What's something you're looking forward to?",
-                "What's something you're currently trying to improve about yourself?",
-                "If you could have dinner with anyone, living or dead, who would it be?"
-            ],
-            "Fun & Funny": [
-                "If you could be any fictional character, who would you choose?",
-                "What's the weirdest food combination you enjoy?",
-                "What's the most embarrassing thing that's happened to you?",
-                "If animals could talk, which would be the rudest?",
-                "What's the funniest joke you know by heart?",
-                "What's your go-to dance move?",
-                "What's the silliest thing you believed as a child?",
-                "If you had to wear one outfit for the rest of your life, what would it be?",
-                "What's your weirdest hidden talent?",
-                "What's the strangest dream you've ever had?",
-                "If you could only eat one food for the rest of your life, what would it be?",
-                "What's the most ridiculous thing you've ever convinced someone of?",
-                "What's your favorite terrible movie?",
-                "What's the worst haircut you've ever had?",
-                "What's your most controversial food opinion?",
-                "If you could replace all the grass in the world with something, what would it be?",
-                "What's the funniest name you've ever heard?",
-                "What's something you do that you pretend you don't do when people are watching?",
-                "What's the worst fashion trend you've participated in?",
-                "What's the most useless talent you have?",
-                "If you could have an unlimited supply of one thing, what would it be?",
-                "What's the weirdest thing in your fridge right now?",
-                "What's your favorite dad joke?",
-                "What's the most embarrassing song in your music library?",
-                "What's the strangest thing you've ever eaten?",
-                "If you could have any animal as a pet, regardless of practicality, what would you choose?",
-                "What's your worst habit?",
-                "What's the most ridiculous fact you know?",
-                "What's something that's popular now that will be embarrassing in 10 years?",
-                "What's your favorite terrible pun?",
-                "If you could rename yourself, what name would you pick?",
-                "What's the most ridiculous thing you've ever bought?",
-                "What's your spirit animal and why?",
-                "What's the worst pickup line you've ever heard or used?",
-                "What's the most ridiculous thing you've done to avoid social interaction?",
-                "If you could only communicate using movie quotes, which movie would you choose?",
-                "What's the weirdest thing you've ever seen in someone else's home?",
-                "What's the most ridiculous nickname you've ever had?",
-                "What's the strangest law you've heard of?",
-                "If you had to describe yourself as a kitchen appliance, what would you be?",
-                "What's the most ridiculous thing you've cried over?",
-                "What's the worst advice you've ever given?",
-                "What's the most embarrassing thing your parents have done?",
-                "If you could swap lives with any celebrity for a day, who would it be?",
-                "What's the weirdest thing you've ever Googled?",
-                "What's the most ridiculous thing you believed as a child?",
-                "If you had to be a villain in a movie, who would you be?",
-                "What's the strangest compliment you've ever received?",
-                "What's the most ridiculous thing you've done to impress someone?"
-            ],
-            "Deep Thoughts": [
-                "What does it mean to live a good life?",
-                "Do you believe in fate or free will?",
-                "What's your personal philosophy?",
-                "What do you think happens after we die?",
-                "What's the meaning of life in your opinion?",
-                "What's more important: happiness or success?",
-                "Do you believe people can truly change?",
-                "What's the most important quality in a friend?",
-                "What's the most important quality in a partner?",
-                "What does love mean to you?",
-                "Do you believe in soulmates?",
-                "What's your definition of success?",
-                "What's something you've changed your mind about recently?",
-                "What's the hardest lesson you've had to learn?",
-                "What do you think is the biggest problem facing our world today?",
-                "If you could solve one world problem, what would it be?",
-                "What's something you think everyone should experience at least once?",
-                "What's your biggest regret?",
-                "What's something you would tell your younger self?",
-                "What's the most important decision you've ever made?",
-                "What's your biggest fear about the future?",
-                "What gives your life meaning?",
-                "What's something you think is worth suffering for?",
-                "What do you think is the key to happiness?",
-                "What's something you think is overrated in our society?",
-                "What's something you think is underrated in our society?",
-                "What's your biggest hope for humanity?",
-                "What's the most important thing you've learned about yourself?",
-                "What's something you would fight for?",
-                "What's something you wish more people understood?",
-                "What's the most valuable thing you own (not monetary value)?",
-                "What's something you've had to unlearn?",
-                "What's something you would die for?",
-                "What's your idea of perfect happiness?",
-                "What's your greatest extravagance?",
-                "When and where were you happiest?",
-                "What's your most treasured possession?",
-                "What's your greatest fear?",
-                "What's your greatest achievement?",
-                "What's your most marked characteristic?",
-                "Who are your heroes in real life?",
-                "What do you most value in your friends?",
-                "What's your idea of misery?",
-                "What's your greatest regret?",
-                "How would you like to be remembered?",
-                "What's the most important lesson life has taught you?",
-                "What's something you think people misunderstand about you?",
-                "What's something you wish you could tell your future self?",
-                "What's something you wish you could tell your past self?",
-                "What's something you think future generations will judge us for?"
-            ],
-            "Childhood Memories": [
-                "What's your earliest memory?",
-                "What was your favorite toy as a child?",
-                "What was your favorite game to play?",
-                "Did you have an imaginary friend? Tell us about them.",
-                "What was your favorite book as a child?",
-                "What was your favorite TV show or cartoon?",
-                "What was your favorite food when you were a kid?",
-                "What was your least favorite food as a child?",
-                "What was your favorite outfit as a child?",
-                "What was your favorite holiday as a child?",
-                "What was your favorite subject in school?",
-                "What was your least favorite subject in school?",
-                "Who was your favorite teacher and why?",
-                "What was your first pet?",
-                "What was your favorite family vacation as a child?",
-                "What was your favorite thing to do after school?",
-                "What was your favorite birthday party you had?",
-                "What was the best gift you received as a child?",
-                "What was your favorite candy or treat?",
-                "What was your favorite breakfast cereal?",
-                "What was your favorite playground game?",
-                "Did you have any childhood fears?",
-                "What was your favorite bedtime story?",
-                "What was your favorite thing to collect as a child?",
-                "What was your favorite summer activity?",
-                "What was your favorite winter activity?",
-                "What was your favorite thing about your childhood home?",
-                "What was your favorite school lunch?",
-                "What was your favorite restaurant as a child?",
-                "What was your favorite thing to do with your grandparents?",
-                "What was your favorite board game as a child?",
-                "What was your favorite movie as a child?",
-                "What was your favorite song as a child?",
-                "What was your favorite thing to draw as a child?",
-                "What was your favorite place to go with your family?",
-                "What was your favorite thing about your childhood neighborhood?",
-                "What was your favorite school field trip?",
-                "What was your favorite thing to do on weekends as a child?",
-                "What was your favorite rainy day activity?",
-                "What was your favorite thing to build or create as a child?",
-                "What was your favorite thing to pretend when you played make-believe?",
-                "What was your favorite thing about your childhood bedroom?",
-                "What was your favorite thing to do at recess?",
-                "What was your favorite school project?",
-                "What was your favorite childhood tradition?",
-                "What was your favorite thing to do with your siblings or friends?",
-                "What was your favorite thing to do at birthday parties?",
-                "What was your favorite thing about holidays as a child?",
-                "What was your favorite thing to do with your parents?",
-                "What's your fondest childhood memory?"
-            ],
-            "Travel & Adventure": [
-                "What's your favorite place you've ever visited?",
-                "What's the most beautiful place you've ever seen?",
-                "Where would you go if you could travel anywhere right now?",
-                "What's your dream vacation?",
-                "What's the most adventurous thing you've ever done?",
-                "What's your favorite travel memory?",
-                "What's the most interesting culture you've experienced?",
-                "What's the best meal you've had while traveling?",
-                "What's the most breathtaking view you've ever seen?",
-                "What's your favorite city in the world?",
-                "What's the most unusual place you've visited?",
-                "What's your favorite beach you've been to?",
-                "What's your favorite mountain you've climbed or seen?",
-                "What's your favorite national park?",
-                "What's the longest trip you've ever taken?",
-                "What's your favorite mode of transportation when traveling?",
-                "What's your favorite travel souvenir?",
-                "What's your favorite travel photo you've taken?",
-                "What's the most interesting museum you've visited?",
-                "What's the most interesting historical site you've visited?",
-                "What's your favorite hotel or place you've stayed?",
-                "What's your favorite travel book or guide?",
-                "What's your favorite travel app?",
-                "What's your favorite travel tip or hack?",
-                "What's your favorite thing to do when you arrive in a new place?",
-                "What's your favorite foreign cuisine you've tried?",
-                "What's the most interesting local custom you've encountered?",
-                "What's the most challenging trip you've taken?",
-                "What's the most spontaneous trip you've taken?",
-                "What's your favorite travel memory with friends or family?",
-                "What's your favorite travel memory alone?",
-                "What's the most remote place you've visited?",
-                "What's the most luxurious place you've stayed?",
-                "What's the most budget-friendly travel you've done?",
-                "What's your favorite season to travel?",
-                "What's your favorite travel podcast or show?",
-                "What's your favorite travel quote?",
-                "What's your favorite travel movie?",
-                "What's your favorite travel playlist or song?",
-                "What's your favorite travel outfit or item?",
-                "What's the most useful item you always pack?",
-                "What's your favorite airport?",
-                "What's your favorite airline?",
-                "What's the most interesting person you've met while traveling?",
-                "What's the most useful phrase you know in another language?",
-                "What's your favorite travel tradition?",
-                "What's the most surprising thing you've discovered while traveling?",
-                "What's your favorite travel blog or Instagram account?",
-                "What's the most overrated tourist attraction you've visited?",
-                "What's the most underrated place you've visited?",
-                "Where do you want to travel next?"
-            ],
-            "Random Mix": [
-                "If you could have any superpower, what would it be?",
-                "What's your favorite smell?",
-                "What's the last thing you searched for on your phone?",
-                "If you could live in any decade, which would you choose?",
-                "What's your favorite sound?",
-                "What's the most unusual item in your purse or wallet right now?",
-                "What's your favorite time of day?",
-                "What's your favorite way to waste time?",
-                "What's something you think is underrated?",
-                "What's something you think is overrated?",
-                "What's your favorite household chore?",
-                "What's your least favorite household chore?",
-                "What's your favorite condiment?",
-                "What's your favorite kitchen appliance?",
-                "What's your favorite thing to do when you're home alone?",
-                "What's your favorite way to celebrate your birthday?",
-                "What's your favorite way to spend $10?",
-                "What's your favorite way to spend $100?",
-                "What's your favorite way to spend $1000?",
-                "What's your favorite way to spend a rainy day?",
-                "What's your favorite way to spend a sunny day?",
-                "What's your favorite way to spend a snowy day?",
-                "What's your favorite way to spend a windy day?",
-                "What's your favorite way to spend a foggy day?",
-                "What's your favorite way to spend a cloudy day?",
-                "What's your favorite way to spend a hot day?",
-                "What's your favorite way to spend a cold day?",
-                "What's your favorite way to spend a mild day?",
-                "What's your favorite way to spend a perfect day?",
-                "What's your favorite way to spend an imperfect day?",
-                "What's your favorite way to spend a lazy day?",
-                "What's your favorite way to spend a productive day?",
-                "What's your favorite way to spend a stressful day?",
-                "What's your favorite way to spend a relaxing day?",
-                "What's your favorite way to spend an exciting day?",
-                "What's your favorite way to spend a boring day?",
-                "What's your favorite way to spend a sad day?",
-                "What's your favorite way to spend a happy day?",
-                "What's your favorite way to spend an ordinary day?",
-                "What's your favorite way to spend an extraordinary day?",
-                "What's your favorite way to spend a weekend?",
-                "What's your favorite way to spend a weekday?",
-                "What's your favorite way to spend a holiday?",
-                "What's your favorite way to spend a vacation?",
-                "What's your favorite way to spend a workday?",
-                "What's your favorite way to spend a school day?",
-                "What's your favorite way to spend a summer day?",
-                "What's your favorite way to spend a winter day?",
-                "What's your favorite way to spend a spring day?",
-                "What's your favorite way to spend a fall day?"
-            ]
-        };
-
-        // DOM elements
-        const questionOverlay = document.getElementById('questionOverlay');
-        const nextBtn = document.getElementById('nextBtn');
-        const closeBtn = document.getElementById('closeBtn');
-        const topicDisplay = document.getElementById('topicDisplay');
-        const questionText = document.getElementById('questionText');
-        const topicBtns = document.querySelectorAll('.topic-btn');
-
-        // Current state
-        let currentTopic = '';
-        let usedQuestions = [];
-
-        // Event listeners
-        nextBtn.addEventListener('click', showQuestion);
-        closeBtn.addEventListener('click', hideQuestion);
+        function navigate(destination) {
+            // Open a new blank page
+            window.open('about:blank', '_blank');
+            
+            // You could also link to specific pages if you had them:
+            // window.open(destination + '.html', '_blank');
+        }
         
-        topicBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const topic = this.querySelector('h3').textContent;
-                startGame(topic);
+        // Create snowflakes
+        document.addEventListener('DOMContentLoaded', function() {
+            const snowflakes = document.querySelectorAll('.snowflake');
+            snowflakes.forEach((flake, index) => {
+                // Random position
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.top = Math.random() * -10 + 'vh';
+                
+                // Random animation
+                const duration = Math.random() * 10 + 10;
+                const delay = Math.random() * 5;
+                const size = Math.random() * 0.7 + 0.3;
+                
+                flake.style.fontSize = size + 'em';
+                flake.style.opacity = size;
+                flake.style.animation = `snowfall ${duration}s linear ${delay}s infinite`;
+                
+                // Add animation style if not exists
+                if (!document.getElementById('snow-animation')) {
+                    const style = document.createElement('style');
+                    style.id = 'snow-animation';
+                    style.textContent = `
+                        @keyframes snowfall {
+                            0% {
+                                transform: translateY(-10vh) rotate(0deg);
+                            }
+                            100% {
+                                transform: translateY(100vh) rotate(360deg);
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
             });
         });
-
-        // Functions
-        function showQuestion() {
-            if (!currentTopic) return;
-            
-            // Get all questions for current topic
-            const topicQuestions = questions[currentTopic];
-            
-            // Filter out used questions
-            const availableQuestions = topicQuestions.filter(q => !usedQuestions.includes(q));
-            
-            if (availableQuestions.length === 0) {
-                // If all questions have been used, reset used questions
-                usedQuestions = [];
-                questionText.textContent = "We've gone through all questions in this topic! Starting over...";
-                return;
-            }
-            
-            // Select a random question
-            const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-            usedQuestions.push(randomQuestion);
-            
-            // Update UI
-            topicDisplay.textContent = currentTopic;
-            topicDisplay.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 ';
-            
-            // Set color based on topic
-            if (currentTopic === "Getting to Know You") {
-                topicDisplay.classList.add('bg-purple-100', 'text-purple-800');
-            } else if (currentTopic === "Fun & Funny") {
-                topicDisplay.classList.add('bg-blue-100', 'text-blue-800');
-            } else if (currentTopic === "Deep Thoughts") {
-                topicDisplay.classList.add('bg-green-100', 'text-green-800');
-            } else if (currentTopic === "Childhood Memories") {
-                topicDisplay.classList.add('bg-yellow-100', 'text-yellow-800');
-            } else if (currentTopic === "Travel & Adventure") {
-                topicDisplay.classList.add('bg-red-100', 'text-red-800');
-            } else {
-                topicDisplay.classList.add('bg-indigo-100', 'text-indigo-800');
-            }
-            
-            questionText.textContent = randomQuestion;
-        }
-
-        function startGame(topic) {
-            currentTopic = topic;
-            usedQuestions = [];
-            showQuestion();
-            questionOverlay.classList.add('active');
-        }
-
-        function hideQuestion() {
-            questionOverlay.classList.remove('active');
-        }
     </script>
 </body>
 </html>
