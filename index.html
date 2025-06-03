@@ -3,151 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arctic Explorer | Ice Breaker</title>
+    <title>Ice Breaker Game</title>
+    <link rel="icon" type="image/jpg" href="ice_icon.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Raleway', sans-serif;
-            background-image: url('back.jpg');
-            background-size: cover;
+            background-image: url('background.jpg');
+            background-size: auto;           /* Show image in original size */
+            background-repeat: no-repeat;     /* Do not repeat the image */
             background-position: center;
-            background-attachment: fixed;
-            min-height: 100vh;
         }
-        
-        .frosted-glass {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-        
-        .btn-glacial {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 119, 182, 0.3);
-        }
-        
-        .btn-glacial:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 119, 182, 0.4);
-        }
-        
-        .btn-glacial::after {
-            content: '';
-            position: absolute;
+        .fade-overlay {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transform: translateX(-100%);
-            transition: 0.6s;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        
-        .btn-glacial:hover::after {
-            transform: translateX(100%);
+        .fade-overlay.active {
+            opacity: 1;
+            pointer-events: all;
         }
-        
-        .ice-crack {
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        .question-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 90%;
+            width: 600px;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .fade-overlay.active .question-card {
+            transform: translateY(0);
+        }
+        .topic-btn:hover .topic-icon {
+            transform: scale(1.1);
+            transition: transform 0.3s ease;
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
-    <div class="frosted-glass rounded-2xl p-8 md:p-12 max-w-3xl w-full text-center relative overflow-hidden">
-        <!-- Snowflakes decoration -->
-        <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <div class="snowflake">❄</div>
-            <div class="snowflake">❄</div>
-            <div class="snowflake">❄</div>
-            <div class="snowflake">❄</div>
-            <div class="snowflake">❄</div>
-            <div class="snowflake">❄</div>
+<body class="bg-gradient-to-br from-blue-100 via-cyan-100 to-purple-200 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 mb-4 flex items-center justify-center gap-3">
+                <i class="fas fa-ice-cream text-blue-400"></i>
+                Ice Breaker Game
+            </h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Break the ice with fun, random questions! Click on any topic to get started.
+            </p>
+        </header>
+
+        <!-- Topic Selection -->
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="topicSelection">
+                <div class="topic-btn cursor-pointer">
+                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                        <div class="topic-icon bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-users text-purple-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Getting to Know You</h3>
+                        <p class="text-gray-600 mb-4">50 personal questions to learn about each other</p>
+                        <span class="mt-auto bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            50 questions
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="topic-btn cursor-pointer">
+                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                        <div class="topic-icon bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-laugh-beam text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Fun & Funny</h3>
+                        <p class="text-gray-600 mb-4">50 hilarious questions to lighten the mood</p>
+                        <span class="mt-auto bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            50 questions
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="topic-btn cursor-pointer">
+                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                        <div class="topic-icon bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-brain text-green-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Deep Thoughts</h3>
+                        <p class="text-gray-600 mb-4">50 philosophical questions to spark discussion</p>
+                        <span class="mt-auto bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            50 questions
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="topic-btn cursor-pointer">
+                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                        <div class="topic-icon bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-history text-yellow-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Childhood Memories</h3>
+                        <p class="text-gray-600 mb-4">50 nostalgic questions about growing up</p>
+                        <span class="mt-auto bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            50 questions
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="topic-btn cursor-pointer">
+                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                        <div class="topic-icon bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-globe-americas text-red-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Travel & Adventure</h3>
+                        <p class="text-gray-600 mb-4">50 questions about places and experiences</p>
+                        <span class="mt-auto bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            50 questions
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="topic-btn cursor-pointer">
+                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                        <div class="topic-icon bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-random text-indigo-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Random Mix</h3>
+                        <p class="text-gray-600 mb-4">50 completely random questions from all categories</p>
+                        <span class="mt-auto bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            50 questions
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">ARCTIC EXPLORER</h1>
-        <h2 class="text-xl md:text-2xl text-white mb-8 drop-shadow">Break Through the Ice</h2>
-        
-        <div class="space-y-6 md:space-y-8 relative z-10">
-            <!-- Ice White Button -->
-            <button onclick="navigate('polar')" class="btn-glacial w-full md:w-3/4 mx-auto py-4 px-6 rounded-xl bg-gradient-to-r from-white to-blue-100 text-blue-800 font-semibold text-lg md:text-xl relative">
-                POLAR EXPEDITION
-                <div class="ice-crack"></div>
-            </button>
-            
-            <!-- Sky Blue Button -->
-            <button onclick="navigate('glacier')" class="btn-glacial w-full md:w-3/4 mx-auto py-4 px-6 rounded-xl bg-gradient-to-r from-blue-100 to-blue-300 text-white font-semibold text-lg md:text-xl relative">
-                GLACIER VOYAGE
-                <div class="ice-crack"></div>
-            </button>
-            
-            <!-- Ocean Blue Button -->
-            <button onclick="navigate('ocean')" class="btn-glacial w-full md:w-3/4 mx-auto py-4 px-6 rounded-xl bg-gradient-to-r from-blue-300 to-blue-500 text-white font-semibold text-lg md:text-xl relative">
-                DEEP OCEAN MISSION
-                <div class="ice-crack"></div>
-            </button>
+
+        <!-- Question Overlay -->
+        <div class="fade-overlay" id="questionOverlay">
+            <div class="question-card">
+                <div id="topicDisplay" class="inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4"></div>
+                <h3 id="questionText" class="text-2xl md:text-3xl font-medium text-gray-800 mb-8 text-center"></h3>
+                <div class="flex justify-center gap-4">
+                    <button id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full">
+                        Next Question
+                    </button>
+                    <button id="closeBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-full">
+                        Close
+                    </button>
+                </div>
+            </div>
         </div>
-        
-        <div class="mt-10 text-white text-sm">
-            <p>Navigate through frozen waters with our ice-breaking adventures</p>
-        </div>
+
+        <footer class="text-center text-gray-500 text-sm mt-12">
+            <p>Made with <i class="fas fa-heart text-red-500"></i> for fun conversations</p>
+        </footer>
     </div>
 
     <script>
-        function navigate(destination) {
-            // Open a new blank page
-            window.open('about:blank', '_blank');
-            
-            // You could also link to specific pages if you had them:
-            // window.open(destination + '.html', '_blank');
-        }
+        // Question database
+        const questions = {
+            "Getting to Know You": [
+                "What book have you read recently that you would recommend and why?",
+                "What's the best gift you've ever received?",
+                "What's the last thing you completed on your bucket list?",
+                "What's the biggest purchase you ever made?",
+                "What show on Netflix did you binge watch embarrassingly fast?",
+                "What activity or sport did you try as a kid and fail at?",
+                "What is one family tradition you would like to carry on in the future?",
+                "What one accomplishment are you most proud of?",
+                "What was your first job?",
+                "Who's someone you really admire?",
+                "What important truth do very few people agree with you on?",
+                "Who in your life inspires you to be better?",
+                "What do the first 30 mins of your typical day look like?",
+                "What's your love language?",
+                "What was the first thing you remember buying with your own money?",
+                "What's your favorite family tradition?",
+                "What book has made the biggest impact on your life?",
+                "Who had the most influence on you growing up?",
+                "What's something you believed earlier in your career but think about differently now?",
+                "What's your favorite board game?",
+                "What's a skill you learned when you were young that you still use today?",
+                "What's your best scare story?",
+                "What was your favorite subject in school?",
+                "What activity do you enjoy so much that it makes you lose track of time?",
+                "When you were younger, what did you want to be when you grew up?",
+            ],
+            "Fun & Funny": [
+                "What's your dream job if money didn't matter?",
+                "What's the thing you like that creeps other people out?",
+                "Have you been told you look like someone famous, who was it?",
+                "What's the last random thing that made you smile?",
+                "Which piece are you when you play Monopoly?",
+                "What was the last foreign country you visited?",
+                "Which celebrity do you shamelessly follow in the news?",
+                "What would your rap name be?",
+                "What's your most used emoji?",
+                "What's the last thing you bought for under $50 that you love and use often?",
+                "If you have to relive the same day for the rest of your life, which day would you choose?",
+                "Have you had your 15 minutes of fame yet?",
+                "Which season fits your personality?",
+                "What's your guilty pleasure?",
+                "What's something about you that surprises people when they first hear it?",
+                "What's your favorite quote?",
+                "Which famous person have you met?",
+                "If you could have any fictional character as your friend, who would you choose and why?",
+                "Who are three people you want on your team if there was a zombie apocalypse?",
+                "What's the best hotel you've ever stayed in and why?",
+                "You're at a cafe, what type of drink do you order?",
+                "Who would you like to play you in a movie?",
+                "Are you a morning or a night person?",
+                "What's the last product you returned?",
+                "Are you a cat or a dog person?",
+    
+            ],
+            "Deep Thoughts": [
+                "What was the hardest decision you've ever had to make?",
+                "What's the most illegal thing you've done?",
+                "What is something you think everyone should do at least once in their lives?",
+                "What thing are you most scared to tell your parents?",
+                "What is something you are certain you'll never experience and why?",
+                "What are you most looking forward to in the next 10 years?",
+                "What were the three biggest turning points in your life?",
+                "What mistake do you keep making over and over again?",
+                "What do you believe in despite having no proof of it?",
+                "What are some of your personal rules that you refuse to break?",
+                "How do you get in the way of your own success?",
+                "What stereotype do you completely live up to?",
+                "In what way do you feel your childhood was happier than others?",
+                "What do you regret not doing when you were younger?",
+                "What's the most surprising self-realization you've had?",
+                "If you had to change your name what would you change it to?",
+                "What's something you disagree with about the way you were raised?",
+                "What is a mistake people often make about you?",
+                "When was the last time you cried and why?",
+                "What are you most worried about with the next generation?",
+                "What's something you are self-conscious about?",
+                "What chance encounter changed your life forever?",
+                "What are the top three things on your bucket list?",
+                "What's one thing you did that you wish you could go back and undo?",
+            ],
+            "Childhood Memories": [
+                "What's the first concert you ever went to?",
+                "Describe your worst date ever.",
+                "What's the best thing about the opposite gender?",
+                "What's the best compliment you've ever received?",
+                "What's something you will NEVER do again?",
+                "What's something you did as a child that your parents still retell the story about?",
+                "What's the best advice you've ever received?",
+                "What's one of your pet peeves?",
+                "What's the worst job you've ever had?",
+                "What's the best job you ever had?",
+                "What state or country do you never want to go back to?",
+                "What's the most embarrassing thing that's happened to you during a date?",
+                "What is your worst habit?",
+                "What opportunity for love or money have you given up? Do you regret it now?",
+                "What's your dream car?",
+                "What have you bought that you love so much you would happily buy it again?",
+                "How did you meet your best friend?",
+                "What's the best date you've ever been on?",
+                "Who was your first love and when?",
+                "What's the wildest party you've ever been to?",
+                "What's the first music you bought?",
+                "What was your first car?",
+                "What's your most powerful and vivid memory?",
+                "What was the worst haircut you've ever had?",
+                "Who's the worst boss you've ever had and why?",
+],
+            "Travel & Adventure": [
+                "If you could change one thing about the way you were raised, what would you change?",
+                "If you could have any celebrity be your best friend, who would it be?",
+                "If you could only eat one meal every day for the rest of your life, what would it be?",
+                "If you could only drink one type of alcohol for the rest of your life, what would you choose?",
+                "If you could be famous, what would you want to be famous for?",
+                "If you could switch places with one of your friends for a day, who would it be?",
+                "If you could go back in time, what one thing would you tell your teenage self?",
+                "If you could create one holiday, what would you create?",
+                "If you could meet any historical figure, who would you choose and why?",
+                "If you could have any superpower, what would you choose?",
+                "If you could live in a sitcom, which one would it be and why?",
+                "If you could get away with a crime, what crime would you commit?",
+                "If you could pick up a skill instantly, what would it be?",
+                "If you could arm wrestle any historical figure, who would you choose and why?",
+                "If you could compete in the Olympics, which sport would you choose?",
+                "If you could only have five apps on your phone, what would they be?",
+                "If you could know when and how you are going to die, would you want to know?",
+                "If you could solve one world problem, what would it be?",
+                "If you could buy your dream house, what is one weird room or feature you would have?",
+                "If you could instantly be an expert in a subject, what would it be?",
+                "If you could write a book, what would it be about?",
+                "If you could never work again, how would you spend your time?",
+                "If you could visit any place in the world, where would it be and why?",
+                "If you could do anything in the next year, what would it be?",
+                "If you could only keep three things from your home, what would you pick and why?"
+            ],
+            "Random Mix": [
+                "Would you rather not have arms or legs, and why?",
+                "Would you rather win the lottery or live twice as long?",
+                "Would you rather always have gas or always have bad breath?",
+                "Would you rather date someone you love or date someone who loves you?",
+                "Would you rather be slightly late or super early?",
+                "Would you rather watch a movie at home or at the movie theatre?",
+                "Would you rather date someone you met online or go on a blind date?",
+                "Would you rather hear the good news or the bad news?",
+                "Would you rather never read another book or never watch another movie?",
+                "Would you rather be gossiped about or never talked about at all?",
+                "Would you rather win a Grammy or an Oscar?",
+                "Would you rather be proposed to in private or in front of family and friends?",
+                "Would you rather have a cook or a maid?",
+                "Would you rather explore space or the ocean?",
+                "Would you rather be too hot or too cold?",
+                "Would you rather have a rewind or pause button on your life?",
+                "Would you rather live in an apartment in the city or a mansion in the country?",
+                "Would you rather be rich or famous?",
+                "Would you rather be the funniest or smartest person in the room?",
+                "Would you rather be the star player on a losing football team or ride the bench on a winning one?",
+                "Would you rather give up your smartphone or your computer?",
+                "Would you rather experience the beginning of planet earth or the end of planet earth?",
+                "Would you rather end the life of one human or 100 puppies and kittens?",
+                "Would you rather save money or save time?",
+                "Would you rather die before your partner or after?"
+        ]
+        };
+
+        // DOM elements
+        const questionOverlay = document.getElementById('questionOverlay');
+        const nextBtn = document.getElementById('nextBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const topicDisplay = document.getElementById('topicDisplay');
+        const questionText = document.getElementById('questionText');
+        const topicBtns = document.querySelectorAll('.topic-btn');
+
+        // Current state
+        let currentTopic = '';
+        let usedQuestions = [];
+
+        // Event listeners
+        nextBtn.addEventListener('click', showQuestion);
+        closeBtn.addEventListener('click', hideQuestion);
         
-        // Create snowflakes
-        document.addEventListener('DOMContentLoaded', function() {
-            const snowflakes = document.querySelectorAll('.snowflake');
-            snowflakes.forEach((flake, index) => {
-                // Random position
-                flake.style.left = Math.random() * 100 + 'vw';
-                flake.style.top = Math.random() * -10 + 'vh';
-                
-                // Random animation
-                const duration = Math.random() * 10 + 10;
-                const delay = Math.random() * 5;
-                const size = Math.random() * 0.7 + 0.3;
-                
-                flake.style.fontSize = size + 'em';
-                flake.style.opacity = size;
-                flake.style.animation = `snowfall ${duration}s linear ${delay}s infinite`;
-                
-                // Add animation style if not exists
-                if (!document.getElementById('snow-animation')) {
-                    const style = document.createElement('style');
-                    style.id = 'snow-animation';
-                    style.textContent = `
-                        @keyframes snowfall {
-                            0% {
-                                transform: translateY(-10vh) rotate(0deg);
-                            }
-                            100% {
-                                transform: translateY(100vh) rotate(360deg);
-                            }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
+        topicBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const topic = this.querySelector('h3').textContent;
+                startGame(topic);
             });
         });
+
+        // Functions
+        function showQuestion() {
+            if (!currentTopic) return;
+            
+            // Get all questions for current topic
+            const topicQuestions = questions[currentTopic];
+            
+            // Filter out used questions
+            const availableQuestions = topicQuestions.filter(q => !usedQuestions.includes(q));
+            
+            if (availableQuestions.length === 0) {
+                // If all questions have been used, reset used questions
+                usedQuestions = [];
+                questionText.textContent = "We've gone through all questions in this topic! Starting over...";
+                return;
+            }
+            
+            // Select a random question
+            const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+            usedQuestions.push(randomQuestion);
+            
+            // Update UI
+            topicDisplay.textContent = currentTopic;
+            topicDisplay.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 ';
+            
+            // Set color based on topic
+            if (currentTopic === "Getting to Know You") {
+                topicDisplay.classList.add('bg-purple-100', 'text-purple-800');
+            } else if (currentTopic === "Fun & Funny") {
+                topicDisplay.classList.add('bg-blue-100', 'text-blue-800');
+            } else if (currentTopic === "Deep Thoughts") {
+                topicDisplay.classList.add('bg-green-100', 'text-green-800');
+            } else if (currentTopic === "Childhood Memories") {
+                topicDisplay.classList.add('bg-yellow-100', 'text-yellow-800');
+            } else if (currentTopic === "Travel & Adventure") {
+                topicDisplay.classList.add('bg-red-100', 'text-red-800');
+            } else {
+                topicDisplay.classList.add('bg-indigo-100', 'text-indigo-800');
+            }
+            
+            questionText.textContent = randomQuestion;
+        }
+
+        function startGame(topic) {
+            currentTopic = topic;
+            usedQuestions = [];
+            showQuestion();
+            questionOverlay.classList.add('active');
+        }
+
+        function hideQuestion() {
+            questionOverlay.classList.remove('active');
+        }
     </script>
 </body>
 </html>
