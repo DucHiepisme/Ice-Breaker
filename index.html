@@ -1,175 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ice Breaker Game</title>
-    <link rel="icon" type="image/jpg" href="ice_icon.jpg">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background-image: url('background.jpg');
-            background-size: auto;           /* Show image in original size */
-            background-repeat: no-repeat;     /* Do not repeat the image */
-            background-position: center;
-        }
-        .fade-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        .fade-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        .question-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            max-width: 90%;
-            width: 600px;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-        .fade-overlay.active .question-card {
-            transform: translateY(0);
-        }
-        .topic-btn:hover .topic-icon {
-            transform: scale(1.1);
-            transition: transform 0.3s ease;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ice Breaker Game</title>
+<meta name="description" content="Break the ice with a cartoon penguin. Pick a topic and get fun conversation questions for any group.">
+<meta property="og:title" content="Ice Breaker Game">
+<meta property="og:description" content="Pick a topic, pull a question, and get everyone talking.">
+<link rel="icon" type="image/jpg" href="ice_icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17284b; --paper:#f7fdff; --ice:#bfeaff; --pink:#ff5d73;
+  --font:"Fredoka","Trebuchet MS","Comic Sans MS",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; color:var(--ink); font-family:var(--font);
+  background:linear-gradient(#72d0ff 0%,#b5e7ff 40%,#e8f9ff 100%) fixed;
+  overflow-x:hidden;
+}
+button{font-family:inherit; color:inherit}
+
+/* ---------- scenery ---------- */
+.clouds{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+.cloud{position:absolute; left:-240px; width:150px; height:46px; background:#fff; border-radius:999px; opacity:.92;
+  animation:drift linear infinite}
+.cloud::before,.cloud::after{content:""; position:absolute; background:#fff; border-radius:50%}
+.cloud::before{width:62px; height:62px; left:24px; top:-30px}
+.cloud::after{width:78px; height:78px; left:66px; top:-42px}
+.c1{top:9%; animation-duration:85s}
+.c2{top:22%; transform:scale(.7); animation-duration:110s; animation-delay:-40s}
+.c3{top:36%; transform:scale(1.15); animation-duration:140s; animation-delay:-90s; opacity:.75}
+@keyframes drift{to{left:calc(100vw + 240px)}}
+#snow{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:1}
+.drift{position:fixed; left:0; bottom:0; width:100%; height:120px; z-index:1; pointer-events:none}
+
+/* ---------- layout ---------- */
+#app{position:relative; z-index:2; max-width:1080px; margin:0 auto; padding:18px 20px 150px}
+.top{display:flex; justify-content:flex-end}
+.chip{
+  border:4px solid var(--ink); background:#fff; border-radius:999px; padding:6px 14px; font-weight:600; font-size:15px;
+  cursor:pointer; box-shadow:0 4px 0 var(--ink); transition:transform .1s, box-shadow .1s;
+}
+.chip:hover{transform:translateY(-2px); box-shadow:0 6px 0 var(--ink)}
+.chip:active{transform:translateY(3px); box-shadow:0 1px 0 var(--ink)}
+.chip[aria-pressed="false"]{background:#dfe9f5; color:#4b5d80}
+
+.hero{text-align:center; padding-top:6px}
+h1{
+  margin:6px 0 8px; font-size:clamp(46px,10vw,92px); line-height:1; font-weight:700; letter-spacing:.02em;
+  color:#fff; -webkit-text-stroke:10px var(--ink); paint-order:stroke fill; text-shadow:0 8px 0 var(--ink);
+  transform:rotate(-2deg);
+}
+h1 .b{color:#ffd45e}
+.tag{margin:18px auto 0; max-width:520px; font-size:clamp(17px,2.6vw,21px); font-weight:500}
+
+.bubble{
+  position:relative; display:inline-flex; align-items:center; justify-content:center; min-height:62px; max-width:min(380px,90%);
+  margin:22px auto 16px; padding:12px 20px; background:#fff; border:4px solid var(--ink); border-radius:24px;
+  font-weight:600; font-size:17px; line-height:1.3; box-shadow:0 5px 0 var(--ink);
+}
+.bubble::after{
+  content:""; position:absolute; left:50%; bottom:-14px; width:22px; height:22px; background:#fff;
+  border-right:4px solid var(--ink); border-bottom:4px solid var(--ink); transform:translateX(-50%) rotate(45deg);
+}
+.bubble.say{animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+
+.penguin-wrap{width:170px; margin:6px auto -46px; position:relative; z-index:2; cursor:pointer}
+.floe{
+  position:relative; z-index:1; width:min(340px,84vw); height:54px; margin:0 auto;
+  background:#eefbff; border:5px solid var(--ink); border-radius:50%;
+  box-shadow:inset 0 -10px 0 #b5e3f8, 0 8px 0 var(--ink);
+}
+
+/* ---------- penguin ---------- */
+.penguin{display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 95%; animation:bob 2.6s ease-in-out infinite}
+.penguin .flip-r{transform-box:fill-box; transform-origin:20% 10%}
+.penguin .flip-l{transform-box:fill-box; transform-origin:80% 10%; animation:sway 2.6s ease-in-out infinite}
+.hero .penguin .flip-r{animation:wave 1s ease-in-out 3 .7s}
+.penguin.happy{animation:hop .7s cubic-bezier(.3,1.5,.5,1)}
+.penguin.happy .flip-r{animation:wave .7s ease-in-out 2}
+.penguin.happy .flip-l{animation:wave-l .7s ease-in-out 2}
+.penguin.react{animation:tilt .6s ease-in-out}
+.penguin .lid{transform-box:fill-box; transform-origin:50% 0; transform:scaleY(0); animation:blink 4.6s infinite}
+@keyframes bob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-6px) scale(1.01,.99)}}
+@keyframes sway{0%,100%{transform:rotate(0)}50%{transform:rotate(5deg)}}
+@keyframes wave{0%,100%{transform:rotate(0)}25%,75%{transform:rotate(-38deg)}50%{transform:rotate(-8deg)}}
+@keyframes wave-l{0%,100%{transform:rotate(0)}25%,75%{transform:rotate(38deg)}50%{transform:rotate(8deg)}}
+@keyframes hop{0%{transform:translateY(0) scale(1.1,.86)}40%{transform:translateY(-30px) scale(.92,1.1)}70%{transform:translateY(0) scale(1.08,.92)}100%{transform:translateY(0) scale(1)}}
+@keyframes tilt{0%{transform:rotate(0)}30%{transform:rotate(-9deg) translateY(-8px)}60%{transform:rotate(6deg)}100%{transform:rotate(0)}}
+@keyframes blink{0%,90%,100%{transform:scaleY(0)}94%{transform:scaleY(1)}}
+@keyframes pop{0%{transform:scale(.8) rotate(-2deg); opacity:0}60%{transform:scale(1.05) rotate(1deg); opacity:1}100%{transform:none; opacity:1}}
+
+/* ---------- topics ---------- */
+.label{
+  display:table; margin:52px auto 26px; padding:6px 22px; background:#fff; border:4px solid var(--ink); border-radius:999px;
+  font-size:18px; font-weight:700; box-shadow:0 5px 0 var(--ink);
+}
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:28px}
+.topic{
+  --c:#fff; position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
+  padding:22px 18px 20px; background:var(--c); border:5px solid var(--ink); border-radius:28px; cursor:pointer;
+  box-shadow:0 9px 0 var(--ink); transition:transform .15s, box-shadow .15s;
+  animation:pop .55s cubic-bezier(.34,1.56,.64,1) both; animation-delay:calc(var(--i) * 70ms + .2s);
+}
+.topic:hover,.topic:focus-visible{transform:translateY(-6px) rotate(-1.2deg); box-shadow:0 15px 0 var(--ink)}
+.topic:active{transform:translateY(6px); box-shadow:0 2px 0 var(--ink)}
+.topic:focus-visible,.btn:focus-visible,.chip:focus-visible,.close:focus-visible,.link:focus-visible{outline:4px dashed var(--ink); outline-offset:5px}
+.emoji{
+  display:grid; place-items:center; width:76px; height:76px; font-size:40px; background:#fff; border:4px solid var(--ink);
+  border-radius:50%; transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.topic:hover .emoji,.topic:focus-visible .emoji{transform:rotate(-12deg) scale(1.15)}
+.topic h3{margin:4px 0 0; font-size:24px; font-weight:700; line-height:1.15}
+.topic p{margin:0 0 8px; font-size:16px; font-weight:500; line-height:1.35}
+.count{margin-top:auto; padding:3px 14px; background:#fff; border:3px solid var(--ink); border-radius:999px; font-size:14px; font-weight:600}
+
+footer{margin-top:60px; text-align:center}
+footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px solid var(--ink); border-radius:999px; font-weight:600; box-shadow:0 4px 0 var(--ink)}
+
+/* ---------- question overlay ---------- */
+.overlay{
+  position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:110px 16px 24px;
+  overflow:auto; background:rgba(23,40,75,.55); backdrop-filter:blur(4px);
+  opacity:0; visibility:hidden; transition:opacity .25s, visibility 0s .25s;
+}
+.overlay.open{opacity:1; visibility:visible; transition:opacity .25s}
+.stage{
+  --c:#6ccfff; position:relative; width:min(640px,100%); margin:auto;
+  transform:translateY(50px) scale(.7) rotate(-4deg); transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+}
+.overlay.open .stage{transform:none}
+.peek{position:absolute; left:50%; top:-100px; width:128px; transform:translateX(-50%); z-index:0; pointer-events:none}
+.card{
+  position:relative; z-index:1; padding:28px 26px 22px; text-align:center; background:var(--paper);
+  border:5px solid var(--ink); border-radius:30px; box-shadow:0 10px 0 var(--ink);
+}
+.close{
+  position:absolute; top:12px; right:12px; width:42px; height:42px; display:grid; place-items:center; font-size:18px; font-weight:700;
+  background:#fff; border:4px solid var(--ink); border-radius:50%; cursor:pointer; transition:transform .15s;
+}
+.close:hover{transform:rotate(90deg) scale(1.08)}
+.pill{display:inline-flex; align-items:center; gap:8px; padding:6px 18px; background:var(--c); border:4px solid var(--ink); border-radius:999px; font-weight:700; font-size:17px}
+.question{
+  min-height:7.6em; display:grid; place-items:center; margin:20px 0 14px; font-size:clamp(23px,4.8vw,33px); line-height:1.25; font-weight:600;
+}
+.question.swap{animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
+.progress{height:20px; background:#fff; border:4px solid var(--ink); border-radius:999px; overflow:hidden}
+.bar{height:100%; width:0; background:var(--c); transition:width .45s cubic-bezier(.34,1.56,.64,1)}
+.meta{display:flex; justify-content:space-between; gap:12px; margin-top:8px; font-size:14px; font-weight:600}
+.note{min-height:1.5em; margin-top:8px; font-size:15px; font-weight:600; color:#3b5b9a}
+.actions{display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px}
+.btn{
+  font-size:18px; font-weight:700; padding:12px 24px; background:#fff; border:4px solid var(--ink); border-radius:999px; cursor:pointer;
+  box-shadow:0 6px 0 var(--ink); transition:transform .1s, box-shadow .1s;
+}
+.btn:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 8px 0 var(--ink)}
+.btn:active:not(:disabled){transform:translateY(5px); box-shadow:0 1px 0 var(--ink)}
+.btn.primary{background:var(--c); font-size:21px; padding:14px 32px}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.link{margin-top:18px; background:none; border:0; font-size:16px; font-weight:600; text-decoration:underline; text-underline-offset:4px; cursor:pointer}
+.spark{position:fixed; z-index:200; pointer-events:none; font-size:20px; animation:spark .8s ease-out forwards}
+@keyframes spark{from{transform:translate(0,0) scale(.6); opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(180deg); opacity:0}}
+@media (hover:none){.hint{display:none}}
+@media (max-width:480px){#app{padding-inline:14px} .btn{padding:11px 18px} .btn.primary{padding:13px 24px}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important; transition-duration:.01ms !important}
+  .penguin .lid{transform:scaleY(0)}
+}
+</style>
 </head>
-<body class="bg-gradient-to-br from-blue-100 via-cyan-100 to-purple-200 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-500 mb-4 flex items-center justify-center gap-3">
-                <i class="fas fa-ice-cream text-blue-400"></i>
-                Ice Breaker Game
-            </h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Break the ice with fun, random questions! Click on any topic to get started.
-            </p>
-        </header>
+<body>
 
-        <!-- Topic Selection -->
-        <div class="max-w-4xl mx-auto">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="topicSelection">
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-users text-purple-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Life</h3>
-                        <p class="text-gray-600 mb-4">Personal questions to get know more about your life</p>
-                        <span class="mt-auto bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-random text-blue-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Random</h3>
-                        <p class="text-gray-600 mb-4">Random questions to lighten the mood</p>
-                        <span class="mt-auto bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-brain text-green-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Deep</h3>
-                        <p class="text-gray-600 mb-4">50 philosophical questions to spark discussion</p>
-                        <span class="mt-auto bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-history text-yellow-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Experiences</h3>
-                        <p class="text-gray-600 mb-4">Questions to learn more about your memorial experiences</p>
-                        <span class="mt-auto bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-cloud text-red-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">If you could...</h3>
-                        <p class="text-gray-600 mb-4">Selection questions regarding various cases: 'If you could...'</p>
-                        <span class="mt-auto bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="topic-btn cursor-pointer">
-                    <div class="bg-white rounded-xl shadow-md p-6 h-full flex flex-col items-center text-center hover:shadow-lg transition-shadow">
-                        <div class="topic-icon bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-laugh-beam text-indigo-600 text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Would you rather...</h3>
-                        <p class="text-gray-600 mb-4">Selection questions regarding various cases: 'Would you rather...'</p>
-                        <span class="mt-auto bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            50 questions
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="clouds" aria-hidden="true"><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i></div>
+<canvas id="snow" aria-hidden="true"></canvas>
+<svg class="drift" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 50 Q120 10 240 44 T480 40 T720 48 T960 38 T1200 46 T1440 36 V120 H0Z" fill="#d3f0ff"/>
+  <path d="M0 78 Q90 38 190 70 T380 66 T570 74 T760 62 T950 76 T1140 64 T1330 74 T1440 66 V120 H0Z" fill="#fff" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
+</svg>
 
-        <!-- Question Overlay -->
-        <div class="fade-overlay" id="questionOverlay">
-            <div class="question-card">
-                <div id="topicDisplay" class="inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4"></div>
-                <h3 id="questionText" class="text-2xl md:text-3xl font-medium text-gray-800 mb-8 text-center"></h3>
-                <div class="flex justify-center gap-4">
-                    <button id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full">
-                        Next Question
-                    </button>
-                    <button id="closeBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-full">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
+<main id="app">
+  <div class="top">
+    <button class="chip" id="snowBtn" type="button" aria-pressed="true">❄ Snow: on</button>
+  </div>
 
-        <footer class="text-center text-gray-500 text-sm mt-12">
-            <p>Made with <i class="fas fa-heart text-red-500"></i> for fun conversations</p>
-        </footer>
+  <section class="hero">
+    <h1><span>Ice</span> <span class="b">Breaker</span></h1>
+    <p class="tag">Pick a topic, pull a question, and get everyone talking.</p>
+    <div class="bubble" id="bubble" role="status" aria-live="polite">Hi! Pick a topic and let's break the ice!</div>
+    <div class="penguin-wrap" id="heroPenguin" title="Boop!"></div>
+    <div class="floe"></div>
+  </section>
+
+  <section>
+    <h2 class="label">Choose a topic</h2>
+    <div class="grid" id="topics"></div>
+  </section>
+
+  <footer><span>Made with ❤️ for fun conversations</span></footer>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="qPill" aria-hidden="true">
+  <div class="stage" id="stage">
+    <div class="peek" id="peekPenguin"></div>
+    <div class="card">
+      <button class="close" id="closeBtn" type="button" aria-label="Close and pick another topic">✕</button>
+      <div class="pill" id="qPill"></div>
+      <div class="question" id="qText" aria-live="polite"></div>
+      <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+      <div class="meta"><span id="counter"></span><span class="hint">Tip: use ← → keys, Esc to close</span></div>
+      <div class="note" id="note"></div>
+      <div class="actions">
+        <button class="btn" id="prevBtn" type="button" aria-label="Previous question">← Prev</button>
+        <button class="btn primary" id="nextBtn" type="button">Next →</button>
+      </div>
+      <button class="link" id="backBtn" type="button">Pick another topic</button>
     </div>
+  </div>
+</div>
 
-    <script>
-        // Question database
-        const questions = {
+<template id="penguinTpl">
+<svg class="penguin" viewBox="0 0 200 244" role="img" aria-label="Cartoon penguin in a beanie and scarf">
+  <g fill="#ffa733" stroke="#17284b" stroke-width="5" stroke-linejoin="round">
+    <ellipse cx="72" cy="224" rx="26" ry="11"/><ellipse cx="128" cy="224" rx="26" ry="11"/>
+  </g>
+  <g class="flip-l"><path d="M42 112 Q6 140 22 188 Q46 178 54 138Z" fill="#2a4380" stroke="#17284b" stroke-width="5" stroke-linejoin="round"/></g>
+  <g class="flip-r"><path d="M158 112 Q194 140 178 188 Q154 178 146 138Z" fill="#2a4380" stroke="#17284b" stroke-width="5" stroke-linejoin="round"/></g>
+  <ellipse cx="100" cy="132" rx="72" ry="94" fill="#2a4380" stroke="#17284b" stroke-width="5"/>
+  <ellipse cx="100" cy="168" rx="46" ry="56" fill="#fff"/>
+  <path d="M44 130 Q100 160 156 130 L152 152 Q100 182 48 152Z" fill="#ff5d73" stroke="#17284b" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M118 164 L142 160 L148 204 L124 210Z" fill="#ff5d73" stroke="#17284b" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="76" cy="98" r="15" fill="#fff" stroke="#17284b" stroke-width="4"/>
+  <circle cx="124" cy="98" r="15" fill="#fff" stroke="#17284b" stroke-width="4"/>
+  <circle cx="79" cy="101" r="7" fill="#17284b"/><circle cx="121" cy="101" r="7" fill="#17284b"/>
+  <circle cx="81" cy="98" r="2.5" fill="#fff"/><circle cx="123" cy="98" r="2.5" fill="#fff"/>
+  <ellipse class="lid" cx="76" cy="98" rx="16" ry="16" fill="#2a4380"/>
+  <ellipse class="lid" cx="124" cy="98" rx="16" ry="16" fill="#2a4380"/>
+  <ellipse cx="55" cy="118" rx="9" ry="6" fill="#ff8fab" opacity=".9"/><ellipse cx="145" cy="118" rx="9" ry="6" fill="#ff8fab" opacity=".9"/>
+  <path d="M84 112 Q100 104 116 112 Q112 132 100 136 Q88 132 84 112Z" fill="#ffa733" stroke="#17284b" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M46 70 Q48 22 100 20 Q152 22 154 70 Q100 56 46 70Z" fill="#5ec8ff" stroke="#17284b" stroke-width="5" stroke-linejoin="round"/>
+  <rect x="40" y="62" width="120" height="20" rx="10" fill="#ff5d73" stroke="#17284b" stroke-width="5"/>
+  <circle cx="100" cy="16" r="12" fill="#fff" stroke="#17284b" stroke-width="5"/>
+</svg>
+</template>
+
+<script>
+/* ------------------------------------------------------------------
+   Question database (unchanged from the original game)
+------------------------------------------------------------------- */
+const questions = {
             "Life": [
                 "What book have you read recently that you would recommend and why?",
                 "What's the best gift you've ever received?",
@@ -334,82 +417,170 @@
         ]
         };
 
-        // DOM elements
-        const questionOverlay = document.getElementById('questionOverlay');
-        const nextBtn = document.getElementById('nextBtn');
-        const closeBtn = document.getElementById('closeBtn');
-        const topicDisplay = document.getElementById('topicDisplay');
-        const questionText = document.getElementById('questionText');
-        const topicBtns = document.querySelectorAll('.topic-btn');
+/* Topic look & feel. Keys must match the keys in `questions`. */
+const topics = [
+  {key:"Life",                emoji:"🌟", color:"#ff9ebd", desc:"Personal questions to get to know you better"},
+  {key:"Random",              emoji:"🎲", color:"#ffd45e", desc:"Random questions to lighten the mood"},
+  {key:"Deep",                emoji:"🧠", color:"#b4a7ff", desc:"Philosophical questions to spark discussion"},
+  {key:"Experiences",         emoji:"🎒", color:"#7ee8b5", desc:"Questions about your most memorable moments"},
+  {key:"If you could...",     emoji:"🪄", color:"#ffaa72", desc:"Imaginative “If you could…” scenarios"},
+  {key:"Would you rather...", emoji:"⚖️", color:"#6ccfff", desc:"Tough “Would you rather…” choices"}
+];
 
-        // Current state
-        let currentTopic = '';
-        let usedQuestions = [];
+const $ = s => document.querySelector(s);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const app = $("#app"), overlay = $("#overlay"), stage = $("#stage");
+const bubble = $("#bubble"), tpl = $("#penguinTpl");
+const HELLO = "Hi! Pick a topic and let's break the ice!";
 
-        // Event listeners
-        nextBtn.addEventListener('click', showQuestion);
-        closeBtn.addEventListener('click', hideQuestion);
-        
-        topicBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const topic = this.querySelector('h3').textContent;
-                startGame(topic);
-            });
-        });
+/* ---------- penguins ---------- */
+const hero = tpl.content.cloneNode(true); $("#heroPenguin").appendChild(hero);
+const peek = tpl.content.cloneNode(true); $("#peekPenguin").appendChild(peek);
+const heroSvg = $("#heroPenguin .penguin"), peekSvg = $("#peekPenguin .penguin");
 
-        // Functions
-        function showQuestion() {
-            if (!currentTopic) return;
-            
-            // Get all questions for current topic
-            const topicQuestions = questions[currentTopic];
-            
-            // Filter out used questions
-            const availableQuestions = topicQuestions.filter(q => !usedQuestions.includes(q));
-            
-            if (availableQuestions.length === 0) {
-                // If all questions have been used, reset used questions
-                usedQuestions = [];
-                questionText.textContent = "We've gone through all questions in this topic! Starting over...";
-                return;
-            }
-            
-            // Select a random question
-            const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-            usedQuestions.push(randomQuestion);
-            
-            // Update UI
-            topicDisplay.textContent = currentTopic;
-            topicDisplay.className = 'inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 ';
-            
-            // Set color based on topic
-            if (currentTopic === "Getting to Know You") {
-                topicDisplay.classList.add('bg-purple-100', 'text-purple-800');
-            } else if (currentTopic === "Fun & Funny") {
-                topicDisplay.classList.add('bg-blue-100', 'text-blue-800');
-            } else if (currentTopic === "Deep Thoughts") {
-                topicDisplay.classList.add('bg-green-100', 'text-green-800');
-            } else if (currentTopic === "Childhood Memories") {
-                topicDisplay.classList.add('bg-yellow-100', 'text-yellow-800');
-            } else if (currentTopic === "Travel & Adventure") {
-                topicDisplay.classList.add('bg-red-100', 'text-red-800');
-            } else {
-                topicDisplay.classList.add('bg-indigo-100', 'text-indigo-800');
-            }
-            
-            questionText.textContent = randomQuestion;
-        }
+function play(el, cls){
+  if (reduce) return;
+  el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls);
+  el.addEventListener("animationend", function h(e){
+    if (e.target !== el) return;
+    el.classList.remove(cls); el.removeEventListener("animationend", h);
+  });
+}
+function say(text){
+  bubble.textContent = text;
+  play(bubble, "say");
+}
+const quips = [
+  "Waddle waddle! Pick a topic!", "Ice to meet you! 🧊", "Brrr! Warm up with a question.",
+  "Did you know? Some penguins propose with a pebble. 🪨", "Boop! That tickles!", "Let's get this chat rolling!"
+];
+let quipI = 0;
+$("#heroPenguin").addEventListener("click", () => { play(heroSvg, "happy"); say(quips[quipI++ % quips.length]); });
 
-        function startGame(topic) {
-            currentTopic = topic;
-            usedQuestions = [];
-            showQuestion();
-            questionOverlay.classList.add('active');
-        }
+/* ---------- topic cards ---------- */
+const grid = $("#topics");
+topics.forEach((t, i) => {
+  const n = (questions[t.key] || []).length;
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "topic";
+  b.style.setProperty("--c", t.color); b.style.setProperty("--i", i);
+  b.innerHTML = '<span class="emoji" aria-hidden="true">' + t.emoji + '</span><h3></h3><p></p><span class="count"></span>';
+  b.querySelector("h3").textContent = t.key;
+  b.querySelector("p").textContent = t.desc;
+  b.querySelector(".count").textContent = n + " questions";
+  b.addEventListener("click", () => start(t, b));
+  b.addEventListener("pointerenter", () => say(t.desc + "!"));
+  b.addEventListener("focus", () => say(t.desc + "!"));
+  b.addEventListener("pointerleave", () => say(HELLO));
+  grid.appendChild(b);
+});
 
-        function hideQuestion() {
-            questionOverlay.classList.remove('active');
-        }
-    </script>
+/* ---------- game state ---------- */
+let cur = null, deck = [], idx = 0, opener = null;
+const qText = $("#qText"), qPill = $("#qPill"), bar = $("#bar"), counter = $("#counter"), note = $("#note");
+const prevBtn = $("#prevBtn"), nextBtn = $("#nextBtn");
+
+function shuffle(a){
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function render(){
+  const n = deck.length;
+  qText.textContent = deck[idx];
+  counter.textContent = "Question " + (idx + 1) + " of " + n;
+  bar.style.width = ((idx + 1) / n * 100) + "%";
+  prevBtn.disabled = idx === 0;
+  if (!reduce){ qText.classList.remove("swap"); void qText.offsetWidth; qText.classList.add("swap"); }
+  play(peekSvg, "react");
+}
+function start(t, from){
+  cur = t; opener = from; deck = shuffle((questions[t.key] || []).slice()); idx = 0;
+  stage.style.setProperty("--c", t.color);
+  qPill.textContent = t.emoji + "  " + t.key;
+  note.textContent = "";
+  overlay.classList.add("open"); overlay.setAttribute("aria-hidden", "false"); app.inert = true;
+  render(); nextBtn.focus({preventScroll:true});
+}
+function next(){
+  if (!cur) return;
+  note.textContent = "";
+  if (idx < deck.length - 1){ idx++; }
+  else {
+    const last = deck[idx], n = deck.length;
+    deck = shuffle((questions[cur.key] || []).slice());
+    if (deck.length > 1 && deck[0] === last){ const k = deck.length - 1; [deck[0], deck[k]] = [deck[k], deck[0]]; }
+    idx = 0; note.textContent = "You've seen all " + n + "! Shuffled for another round 🔀";
+  }
+  render();
+}
+function prev(){ if (cur && idx > 0){ idx--; note.textContent = ""; render(); } }
+function close(){
+  overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true"); app.inert = false;
+  if (opener) opener.focus({preventScroll:true});
+  play(heroSvg, "happy"); say(HELLO);
+}
+
+function burst(el){
+  if (reduce) return;
+  const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 9; i++){
+    const s = document.createElement("span"); s.className = "spark"; s.textContent = i % 2 ? "❄" : "✦";
+    const a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 60;
+    s.style.left = cx + "px"; s.style.top = cy + "px";
+    s.style.setProperty("--dx", Math.cos(a) * d + "px"); s.style.setProperty("--dy", Math.sin(a) * d - 20 + "px");
+    s.style.color = ["#5ec8ff", "#fff", "#ffd45e"][i % 3];
+    document.body.appendChild(s); setTimeout(() => s.remove(), 850);
+  }
+}
+
+nextBtn.addEventListener("click", () => { next(); burst(nextBtn); });
+prevBtn.addEventListener("click", prev);
+$("#closeBtn").addEventListener("click", close);
+$("#backBtn").addEventListener("click", close);
+overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+document.addEventListener("keydown", e => {
+  if (!overlay.classList.contains("open")) return;
+  if (e.key === "Escape") close();
+  else if (e.key === "ArrowRight"){ next(); burst(nextBtn); }
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === "Tab"){
+    const f = [...overlay.querySelectorAll("button:not(:disabled)")];
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+});
+
+/* ---------- snow ---------- */
+const cv = $("#snow"), ctx = cv.getContext("2d"), snowBtn = $("#snowBtn");
+let flakes = [], snowOn = !reduce, raf = 0;
+function mk(anywhere){
+  return {x: Math.random() * innerWidth, y: anywhere ? Math.random() * innerHeight : -12,
+          r: 2.5 + Math.random() * 4.5, vy: .5 + Math.random() * 1.1, p: Math.random() * 6.28, s: .01 + Math.random() * .02, a: 8 + Math.random() * 22};
+}
+function resize(){
+  const d = Math.min(devicePixelRatio || 1, 2);
+  cv.width = innerWidth * d; cv.height = innerHeight * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+  flakes = Array.from({length: Math.round(Math.min(110, innerWidth / 11))}, () => mk(true));
+}
+function tick(){
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  ctx.fillStyle = "#fff"; ctx.strokeStyle = "#8fd3f5"; ctx.lineWidth = 1.5;
+  for (const f of flakes){
+    f.p += f.s; f.y += f.vy;
+    if (f.y > innerHeight + 12) Object.assign(f, mk(false));
+    ctx.beginPath(); ctx.arc(f.x + Math.sin(f.p) * f.a, f.y, f.r, 0, 6.2832); ctx.fill(); ctx.stroke();
+  }
+  raf = requestAnimationFrame(tick);
+}
+function setSnow(on){
+  snowOn = on; snowBtn.setAttribute("aria-pressed", String(on)); snowBtn.textContent = on ? "❄ Snow: on" : "❄ Snow: off";
+  cancelAnimationFrame(raf); ctx.clearRect(0, 0, innerWidth, innerHeight);
+  if (on) tick();
+}
+snowBtn.addEventListener("click", () => setSnow(!snowOn));
+addEventListener("resize", resize);
+resize(); setSnow(snowOn);
+</script>
 </body>
 </html>
