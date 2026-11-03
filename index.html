@@ -163,7 +163,8 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
 .btn:active:not(:disabled){transform:translateY(5px); box-shadow:0 1px 0 var(--ink)}
 .btn.primary{background:var(--c); font-size:21px; padding:14px 32px}
 .btn:disabled{opacity:.4; cursor:not-allowed}
-.link{margin-top:18px; background:none; border:0; font-size:16px; font-weight:600; text-decoration:underline; text-underline-offset:4px; cursor:pointer}
+.links{display:flex; justify-content:center; flex-wrap:wrap; gap:6px 26px; margin-top:18px}
+.link{background:none; border:0; font-size:16px; font-weight:600; text-decoration:underline; text-underline-offset:4px; cursor:pointer}
 .spark{position:fixed; z-index:200; pointer-events:none; font-size:20px; animation:spark .8s ease-out forwards}
 @keyframes spark{from{transform:translate(0,0) scale(.6); opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(180deg); opacity:0}}
 @media (hover:none){.hint{display:none}}
@@ -218,7 +219,10 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
         <button class="btn" id="prevBtn" type="button" aria-label="Previous question">← Prev</button>
         <button class="btn primary" id="nextBtn" type="button">Next →</button>
       </div>
-      <button class="link" id="backBtn" type="button">Pick another topic</button>
+      <div class="links">
+        <button class="link" id="backBtn" type="button">Pick another topic</button>
+        <button class="link" id="resetBtn" type="button">↺ Start this topic over</button>
+      </div>
     </div>
   </div>
 </div>
@@ -458,7 +462,7 @@ let quipI = 0;
 $("#heroPenguin").addEventListener("click", () => { play(heroSvg, "happy"); say(quips[quipI++ % quips.length]); });
 
 /* ---------- topic cards ---------- */
-const grid = $("#topics");
+const grid = $("#topics"), cards = {};
 topics.forEach((t, i) => {
   const n = (questions[t.key] || []).length;
   const b = document.createElement("button");
@@ -467,7 +471,7 @@ topics.forEach((t, i) => {
   b.innerHTML = '<span class="emoji" aria-hidden="true">' + t.emoji + '</span><h3></h3><p></p><span class="count"></span>';
   b.querySelector("h3").textContent = t.key;
   b.querySelector("p").textContent = t.desc;
-  b.querySelector(".count").textContent = n + " questions";
+  cards[t.key] = b.querySelector(".count");
   b.addEventListener("click", () => start(t, b));
   b.addEventListener("pointerenter", () => say(t.desc + "!"));
   b.addEventListener("focus", () => say(t.desc + "!"));
@@ -475,47 +479,80 @@ topics.forEach((t, i) => {
   grid.appendChild(b);
 });
 
+
 /* ---------- game state ---------- */
-let cur = null, deck = [], idx = 0, opener = null;
+/* Every topic remembers which questions it has already shown (also across
+   page reloads). Each "Next" picks a RANDOM question that has not appeared
+   yet; when a topic runs out, it starts a fresh random round. */
+const STORE = "iceBreakerSeen.v1";
+let seen = {};   // topic key -> list of questions already shown
+try { seen = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { seen = {}; }
+function save(){ try { localStorage.setItem(STORE, JSON.stringify(seen)); } catch (e) {} }
+function seenOf(key){
+  const valid = new Set(questions[key] || []);               // ignore entries for questions that were edited away
+  seen[key] = (Array.isArray(seen[key]) ? seen[key] : []).filter(q => valid.has(q));
+  return seen[key];
+}
+
+let cur = null, hist = [], pos = -1, opener = null;         // hist = questions shown in this sitting, pos = current one
 const qText = $("#qText"), qPill = $("#qPill"), bar = $("#bar"), counter = $("#counter"), note = $("#note");
 const prevBtn = $("#prevBtn"), nextBtn = $("#nextBtn");
 
-function shuffle(a){
-  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  return a;
+function pick(){
+  const all = questions[cur.key] || [], s = seenOf(cur.key);
+  let pool = all.filter(q => !s.includes(q)), reset = false;
+  if (!pool.length){                                         // everything has been shown: new round
+    const last = s[s.length - 1];
+    seen[cur.key] = []; reset = true;
+    pool = all.filter(q => q !== last);                      // don't open the new round with the same question
+    if (!pool.length) pool = all.slice();
+  }
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  seen[cur.key].push(q); save();
+  return {q, reset, total: all.length};
+}
+function updateCounts(){
+  topics.forEach(t => {
+    const el = cards[t.key]; if (!el) return;
+    const n = (questions[t.key] || []).length, s = seenOf(t.key).length;
+    el.textContent = n + " questions" + (s ? " · " + s + " seen" : "");
+  });
 }
 function render(){
-  const n = deck.length;
-  qText.textContent = deck[idx];
-  counter.textContent = "Question " + (idx + 1) + " of " + n;
-  bar.style.width = ((idx + 1) / n * 100) + "%";
-  prevBtn.disabled = idx === 0;
+  const n = (questions[cur.key] || []).length, s = seenOf(cur.key).length;
+  qText.textContent = hist[pos];
+  counter.textContent = "Seen " + s + " of " + n;
+  bar.style.width = (s / n * 100) + "%";
+  prevBtn.disabled = pos <= 0;
   if (!reduce){ qText.classList.remove("swap"); void qText.offsetWidth; qText.classList.add("swap"); }
   play(peekSvg, "react");
 }
 function start(t, from){
-  cur = t; opener = from; deck = shuffle((questions[t.key] || []).slice()); idx = 0;
+  cur = t; opener = from; hist = []; pos = -1;
   stage.style.setProperty("--c", t.color);
   qPill.textContent = t.emoji + "  " + t.key;
-  note.textContent = "";
   overlay.classList.add("open"); overlay.setAttribute("aria-hidden", "false"); app.inert = true;
-  render(); nextBtn.focus({preventScroll:true});
+  next(); nextBtn.focus({preventScroll:true});
 }
 function next(){
   if (!cur) return;
   note.textContent = "";
-  if (idx < deck.length - 1){ idx++; }
+  if (pos < hist.length - 1){ pos++; }                       // after "Prev", step forward through what was already shown
   else {
-    const last = deck[idx], n = deck.length;
-    deck = shuffle((questions[cur.key] || []).slice());
-    if (deck.length > 1 && deck[0] === last){ const k = deck.length - 1; [deck[0], deck[k]] = [deck[k], deck[0]]; }
-    idx = 0; note.textContent = "You've seen all " + n + "! Shuffled for another round 🔀";
+    const r = pick(); hist.push(r.q); pos++;
+    if (r.reset) note.textContent = "You've seen all " + r.total + "! Starting a fresh random round 🔀";
   }
   render();
 }
-function prev(){ if (cur && idx > 0){ idx--; note.textContent = ""; render(); } }
+function prev(){ if (cur && pos > 0){ pos--; note.textContent = ""; render(); } }
+function startOver(){
+  if (!cur) return;
+  seen[cur.key] = []; save(); hist = []; pos = -1;
+  next(); note.textContent = "Fresh start! 🎲";
+}
 function close(){
   overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true"); app.inert = false;
+  updateCounts();
   if (opener) opener.focus({preventScroll:true});
   play(heroSvg, "happy"); say(HELLO);
 }
@@ -537,6 +574,7 @@ nextBtn.addEventListener("click", () => { next(); burst(nextBtn); });
 prevBtn.addEventListener("click", prev);
 $("#closeBtn").addEventListener("click", close);
 $("#backBtn").addEventListener("click", close);
+$("#resetBtn").addEventListener("click", startOver);
 overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
 document.addEventListener("keydown", e => {
   if (!overlay.classList.contains("open")) return;
@@ -580,7 +618,7 @@ function setSnow(on){
 }
 snowBtn.addEventListener("click", () => setSnow(!snowOn));
 addEventListener("resize", resize);
-resize(); setSnow(snowOn);
+resize(); setSnow(snowOn); updateCounts();
 </script>
 </body>
 </html>
