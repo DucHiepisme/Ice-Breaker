@@ -2,30 +2,44 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ice Breaker Game</title>
-<meta name="description" content="Break the ice with a cartoon penguin. Pick a topic and get fun conversation questions for any group.">
+<meta name="description" content="Break the ice with a cartoon monkey and penguin. 36 questions from stranger to friend, or random questions to get to know someone more.">
 <meta property="og:title" content="Ice Breaker Game">
-<meta property="og:description" content="Pick a topic, pull a question, and get everyone talking.">
+<meta property="og:description" content="Pick a mode, pull a question, and get talking.">
 <link rel="icon" type="image/jpg" href="ice_icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#17284b; --paper:#f7fdff; --ice:#bfeaff; --pink:#ff5d73;
-  --font:"Fredoka","Trebuchet MS","Comic Sans MS",system-ui,sans-serif;
+  --ink:#17284b; --paper:#f7fdff; --ice:#bfeaff; --pink:#ff5d73; --banana:#ffd45e; --leaf:#2f9a52;
+  --font:"Fredoka","Baloo 2","Trebuchet MS","Comic Sans MS",system-ui,sans-serif;
 }
+/* Fredoka has no Vietnamese glyphs, so Vietnamese text uses Baloo 2 (same rounded cartoon feel) */
+html[lang="vi"]{--font:"Baloo 2","Trebuchet MS",system-ui,sans-serif}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{
-  margin:0; min-height:100vh; color:var(--ink); font-family:var(--font);
-  background:linear-gradient(#72d0ff 0%,#b5e7ff 40%,#e8f9ff 100%) fixed;
-  overflow-x:hidden;
+  margin:0; min-height:100vh; color:var(--ink); font-family:var(--font); overflow-x:hidden;
+  background:#e8f9ff;
 }
+body[data-view="home"]{background:linear-gradient(100deg,#d9f7c8 0%,#fff6d4 50%,#d6f2ff 100%) fixed}
+body[data-view="ice"]{background:linear-gradient(#72d0ff 0%,#b5e7ff 40%,#e8f9ff 100%) fixed}
+body[data-view="forest"]{background:linear-gradient(#5fc46a 0%,#a9e68a 45%,#eefbd8 100%) fixed}
 button{font-family:inherit; color:inherit}
+[hidden]{display:none !important}
 
 /* ---------- scenery ---------- */
+.scene{display:none}
+body[data-view="home"] .scene-home,
+body[data-view="ice"] .scene-ice,
+body[data-view="forest"] .scene-forest{display:block}
+
+.home-dots{position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:radial-gradient(rgba(23,40,75,.09) 2.5px, transparent 3px); background-size:30px 30px}
+.ground{position:fixed; left:0; bottom:0; width:100%; height:110px; z-index:1; pointer-events:none}
+
 .clouds{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
 .cloud{position:absolute; left:-240px; width:150px; height:46px; background:#fff; border-radius:999px; opacity:.92;
   animation:drift linear infinite}
@@ -36,12 +50,22 @@ button{font-family:inherit; color:inherit}
 .c2{top:22%; transform:scale(.7); animation-duration:110s; animation-delay:-40s}
 .c3{top:36%; transform:scale(1.15); animation-duration:140s; animation-delay:-90s; opacity:.75}
 @keyframes drift{to{left:calc(100vw + 240px)}}
-#snow{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:1}
+#snow,#rain{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:1}
 .drift{position:fixed; left:0; bottom:0; width:100%; height:120px; z-index:1; pointer-events:none}
 
+/* rainforest */
+.canopy{position:fixed; top:0; left:0; width:100%; height:92px; z-index:1; pointer-events:none}
+.vine{position:fixed; top:40px; width:54px; height:270px; z-index:1; pointer-events:none; transform-origin:50% 0; animation:vine 5s ease-in-out infinite}
+.vine.v1{left:3%} .vine.v2{right:5%; height:200px; animation-delay:-2s} .vine.v3{left:22%; height:150px; animation-delay:-3.4s}
+@keyframes vine{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.bush{position:fixed; left:0; bottom:0; width:100%; height:140px; z-index:1; pointer-events:none}
+.mist{position:fixed; inset:0; z-index:0; pointer-events:none; background:rgba(30,70,85,.2); opacity:0; transition:opacity .8s}
+body.raining .mist{opacity:1}
+
 /* ---------- layout ---------- */
-#app{position:relative; z-index:2; max-width:1080px; margin:0 auto; padding:18px 20px 150px}
-.top{display:flex; justify-content:flex-end}
+#app{position:relative; z-index:2; max-width:1080px; margin:0 auto; padding:18px 20px 160px}
+.top{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; min-height:44px}
+.top-r{display:flex; gap:10px; flex-wrap:wrap; margin-left:auto}
 .chip{
   border:4px solid var(--ink); background:#fff; border-radius:999px; padding:6px 14px; font-weight:600; font-size:15px;
   cursor:pointer; box-shadow:0 4px 0 var(--ink); transition:transform .1s, box-shadow .1s;
@@ -49,6 +73,10 @@ button{font-family:inherit; color:inherit}
 .chip:hover{transform:translateY(-2px); box-shadow:0 6px 0 var(--ink)}
 .chip:active{transform:translateY(3px); box-shadow:0 1px 0 var(--ink)}
 .chip[aria-pressed="false"]{background:#dfe9f5; color:#4b5d80}
+.seg{display:inline-flex; border:4px solid var(--ink); border-radius:999px; background:#fff; box-shadow:0 4px 0 var(--ink); overflow:hidden}
+.seg button{border:0; background:none; padding:6px 13px; font-weight:600; font-size:15px; cursor:pointer}
+.seg button + button{border-left:4px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--banana)}
 
 .hero{text-align:center; padding-top:6px}
 h1{
@@ -56,11 +84,13 @@ h1{
   color:#fff; -webkit-text-stroke:10px var(--ink); paint-order:stroke fill; text-shadow:0 8px 0 var(--ink);
   transform:rotate(-2deg);
 }
-h1 .b{color:#ffd45e}
-.tag{margin:18px auto 0; max-width:520px; font-size:clamp(17px,2.6vw,21px); font-weight:500}
+h1 .b{color:var(--banana)}
+#v-forest h1{font-size:clamp(38px,8vw,76px); line-height:1.15}
+#v-forest h1 .b{color:#ffa733}
+.tag{margin:18px auto 0; max-width:540px; font-size:clamp(17px,2.6vw,21px); font-weight:500}
 
 .bubble{
-  position:relative; display:inline-flex; align-items:center; justify-content:center; min-height:62px; max-width:min(380px,90%);
+  position:relative; display:inline-flex; align-items:center; justify-content:center; min-height:62px; max-width:min(400px,90%);
   margin:22px auto 16px; padding:12px 20px; background:#fff; border:4px solid var(--ink); border-radius:24px;
   font-weight:600; font-size:17px; line-height:1.3; box-shadow:0 5px 0 var(--ink);
 }
@@ -70,25 +100,36 @@ h1 .b{color:#ffd45e}
 }
 .bubble.say{animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
 
-.penguin-wrap{width:170px; margin:6px auto -46px; position:relative; z-index:2; cursor:pointer}
+.critter-wrap{width:170px; margin:6px auto -46px; position:relative; z-index:2; cursor:pointer}
 .floe{
   position:relative; z-index:1; width:min(340px,84vw); height:54px; margin:0 auto;
   background:#eefbff; border:5px solid var(--ink); border-radius:50%;
   box-shadow:inset 0 -10px 0 #b5e3f8, 0 8px 0 var(--ink);
 }
+#v-forest .critter-wrap{margin-bottom:-34px}
+.branch{
+  position:relative; z-index:1; width:min(360px,86vw); height:32px; margin:0 auto;
+  background:#9a5a2a; border:5px solid var(--ink); border-radius:999px;
+  box-shadow:inset 0 -8px 0 #7a4220, 0 7px 0 var(--ink);
+}
+.branch::before,.branch::after{content:""; position:absolute; width:46px; height:24px; background:#4cc25e; border:4px solid var(--ink); border-radius:0 100% 0 100%}
+.branch::before{right:-30px; top:-20px; transform:rotate(-20deg)}
+.branch::after{left:-26px; top:4px; transform:rotate(160deg)}
 
-/* ---------- penguin ---------- */
-.penguin{display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 95%; animation:bob 2.6s ease-in-out infinite}
-.penguin .flip-r{transform-box:fill-box; transform-origin:20% 10%}
-.penguin .flip-l{transform-box:fill-box; transform-origin:80% 10%; animation:sway 2.6s ease-in-out infinite}
-.hero .penguin .flip-r{animation:wave 1s ease-in-out 3 .7s}
-.penguin.happy{animation:hop .7s cubic-bezier(.3,1.5,.5,1)}
-.penguin.happy .flip-r{animation:wave .7s ease-in-out 2}
-.penguin.happy .flip-l{animation:wave-l .7s ease-in-out 2}
-.penguin.react{animation:tilt .6s ease-in-out}
-.penguin .lid{transform-box:fill-box; transform-origin:50% 0; transform:scaleY(0); animation:blink 4.6s infinite}
+/* ---------- critters (penguin + monkey) ---------- */
+.critter{display:block; width:100%; height:auto; overflow:visible; transform-origin:50% 95%; animation:bob 2.6s ease-in-out infinite}
+.critter .flip-r{transform-box:fill-box; transform-origin:20% 10%}
+.critter .flip-l{transform-box:fill-box; transform-origin:80% 10%; animation:sway 2.6s ease-in-out infinite}
+.hero .critter .flip-r{animation:wave 1s ease-in-out 3 .7s}
+.critter.happy{animation:hop .7s cubic-bezier(.3,1.5,.5,1)}
+.critter.happy .flip-r{animation:wave .7s ease-in-out 2}
+.critter.happy .flip-l{animation:wave-l .7s ease-in-out 2}
+.critter.react{animation:tilt .6s ease-in-out}
+.critter .lid{transform-box:fill-box; transform-origin:50% 0; transform:scaleY(0); animation:blink 4.6s infinite}
+.critter .tail{transform-box:fill-box; transform-origin:0% 80%; animation:tail 3s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-6px) scale(1.01,.99)}}
 @keyframes sway{0%,100%{transform:rotate(0)}50%{transform:rotate(5deg)}}
+@keyframes tail{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
 @keyframes wave{0%,100%{transform:rotate(0)}25%,75%{transform:rotate(-38deg)}50%{transform:rotate(-8deg)}}
 @keyframes wave-l{0%,100%{transform:rotate(0)}25%,75%{transform:rotate(38deg)}50%{transform:rotate(8deg)}}
 @keyframes hop{0%{transform:translateY(0) scale(1.1,.86)}40%{transform:translateY(-30px) scale(.92,1.1)}70%{transform:translateY(0) scale(1.08,.92)}100%{transform:translateY(0) scale(1)}}
@@ -96,29 +137,66 @@ h1 .b{color:#ffd45e}
 @keyframes blink{0%,90%,100%{transform:scaleY(0)}94%{transform:scaleY(1)}}
 @keyframes pop{0%{transform:scale(.8) rotate(-2deg); opacity:0}60%{transform:scale(1.05) rotate(1deg); opacity:1}100%{transform:none; opacity:1}}
 
-/* ---------- topics ---------- */
+/* ---------- home: mode cards ---------- */
 .label{
   display:table; margin:52px auto 26px; padding:6px 22px; background:#fff; border:4px solid var(--ink); border-radius:999px;
   font-size:18px; font-weight:700; box-shadow:0 5px 0 var(--ink);
 }
+.modes{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:130px 40px; margin-top:130px}
+.mode{
+  --c:var(--banana); position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;
+  padding:100px 22px 26px; background:var(--c); border:5px solid var(--ink); border-radius:34px; cursor:pointer;
+  box-shadow:0 10px 0 var(--ink); transition:transform .15s, box-shadow .15s; font-size:inherit;
+  animation:pop .55s cubic-bezier(.34,1.56,.64,1) both; animation-delay:calc(var(--i) * 120ms + .15s);
+}
+.mode:hover,.mode:focus-visible{transform:translateY(-6px) rotate(-1deg); box-shadow:0 16px 0 var(--ink)}
+.mode:nth-child(2):hover,.mode:nth-child(2):focus-visible{transform:translateY(-6px) rotate(1deg)}
+.mode:active{transform:translateY(6px); box-shadow:0 3px 0 var(--ink)}
+.mode .pet{position:absolute; left:50%; top:-104px; width:156px; transform:translateX(-50%); pointer-events:none}
+.mode h3{margin:0; font-size:clamp(27px,4vw,34px); font-weight:700; line-height:1.1}
+.rec{display:inline-flex; align-items:center; gap:6px; padding:5px 15px; background:#fff; border:3px solid var(--ink); border-radius:999px; font-weight:700; font-size:16px}
+.mode .sub{margin:4px 0 6px; font-size:16px; font-weight:500; line-height:1.4; max-width:30ch}
+.go{margin-top:auto; padding:9px 26px; background:var(--ink); color:#fff; border-radius:999px; font-weight:700; font-size:18px}
+
+/* ---------- how to play note ---------- */
+.paper{
+  position:relative; margin:0 auto; max-width:860px; padding:34px 30px 26px; background:#fffef4;
+  border:5px solid var(--ink); border-radius:26px; box-shadow:0 10px 0 var(--ink); transform:rotate(-.6deg);
+}
+.paper::before{content:""; position:absolute; top:-20px; left:50%; width:130px; height:34px; transform:translateX(-50%) rotate(-3deg);
+  background:rgba(255,212,94,.85); border:3px solid var(--ink); border-radius:6px}
+.how-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:22px}
+.how{padding:16px 18px; border:4px dashed var(--ink); border-radius:20px; background:#fff}
+.how:first-child{background:#fff6d1}
+.how:last-child{background:#e3f6ff}
+.how h3{margin:0 0 8px; font-size:21px; font-weight:700}
+.how ol{margin:0; padding-left:22px; font-size:16px; line-height:1.5; font-weight:500}
+.how li + li{margin-top:4px}
+.rules{margin:20px 0 0; font-size:16px; line-height:1.5; font-weight:500; text-align:center}
+.rules b{font-weight:700}
+
+/* ---------- topic / level cards ---------- */
 .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:28px}
 .topic{
   --c:#fff; position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
-  padding:22px 18px 20px; background:var(--c); border:5px solid var(--ink); border-radius:28px; cursor:pointer;
+  padding:22px 18px 20px; background:var(--c); border:5px solid var(--ink); border-radius:28px; cursor:pointer; font-size:inherit;
   box-shadow:0 9px 0 var(--ink); transition:transform .15s, box-shadow .15s;
   animation:pop .55s cubic-bezier(.34,1.56,.64,1) both; animation-delay:calc(var(--i) * 70ms + .2s);
 }
 .topic:hover,.topic:focus-visible{transform:translateY(-6px) rotate(-1.2deg); box-shadow:0 15px 0 var(--ink)}
 .topic:active{transform:translateY(6px); box-shadow:0 2px 0 var(--ink)}
-.topic:focus-visible,.btn:focus-visible,.chip:focus-visible,.close:focus-visible,.link:focus-visible{outline:4px dashed var(--ink); outline-offset:5px}
+.topic:focus-visible,.mode:focus-visible,.btn:focus-visible,.chip:focus-visible,.close:focus-visible,.link:focus-visible,.seg button:focus-visible{outline:4px dashed var(--ink); outline-offset:5px}
 .emoji{
   display:grid; place-items:center; width:76px; height:76px; font-size:40px; background:#fff; border:4px solid var(--ink);
   border-radius:50%; transition:transform .25s cubic-bezier(.34,1.56,.64,1);
 }
 .topic:hover .emoji,.topic:focus-visible .emoji{transform:rotate(-12deg) scale(1.15)}
+.lvl{font-size:15px; font-weight:700; padding:2px 12px; background:#fff; border:3px solid var(--ink); border-radius:999px}
 .topic h3{margin:4px 0 0; font-size:24px; font-weight:700; line-height:1.15}
 .topic p{margin:0 0 8px; font-size:16px; font-weight:500; line-height:1.35}
 .count{margin-top:auto; padding:3px 14px; background:#fff; border:3px solid var(--ink); border-radius:999px; font-size:14px; font-weight:600}
+.count.done{background:#7ee8b5}
+.ftip{margin:34px auto 0; max-width:560px; text-align:center; font-size:16px; font-weight:600; padding:10px 18px; background:rgba(255,255,255,.85); border:4px solid var(--ink); border-radius:20px}
 
 footer{margin-top:60px; text-align:center}
 footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px solid var(--ink); border-radius:999px; font-weight:600; box-shadow:0 4px 0 var(--ink)}
@@ -136,24 +214,27 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
 }
 .overlay.open .stage{transform:none}
 .peek{position:absolute; left:50%; top:-100px; width:128px; transform:translateX(-50%); z-index:0; pointer-events:none}
+.stage[data-mode="forest"] #peekPenguin,.stage[data-mode="ice"] #peekMonkey{display:none}
 .card{
   position:relative; z-index:1; padding:28px 26px 22px; text-align:center; background:var(--paper);
   border:5px solid var(--ink); border-radius:30px; box-shadow:0 10px 0 var(--ink);
 }
+.stage[data-mode="forest"] .card{background:#fbfff4}
 .close{
   position:absolute; top:12px; right:12px; width:42px; height:42px; display:grid; place-items:center; font-size:18px; font-weight:700;
   background:#fff; border:4px solid var(--ink); border-radius:50%; cursor:pointer; transition:transform .15s;
 }
 .close:hover{transform:rotate(90deg) scale(1.08)}
-.pill{display:inline-flex; align-items:center; gap:8px; padding:6px 18px; background:var(--c); border:4px solid var(--ink); border-radius:999px; font-weight:700; font-size:17px}
+.pill{display:inline-flex; align-items:center; gap:8px; max-width:calc(100% - 70px); padding:6px 18px; background:var(--c); border:4px solid var(--ink); border-radius:999px; font-weight:700; font-size:17px}
 .question{
-  min-height:7.6em; display:grid; place-items:center; margin:20px 0 14px; font-size:clamp(23px,4.8vw,33px); line-height:1.25; font-weight:600;
+  min-height:7.6em; display:grid; place-items:center; margin:20px 0 14px; font-size:clamp(22px,4.6vw,31px); line-height:1.3; font-weight:600;
 }
 .question.swap{animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
 .progress{height:20px; background:#fff; border:4px solid var(--ink); border-radius:999px; overflow:hidden}
 .bar{height:100%; width:0; background:var(--c); transition:width .45s cubic-bezier(.34,1.56,.64,1)}
 .meta{display:flex; justify-content:space-between; gap:12px; margin-top:8px; font-size:14px; font-weight:600}
 .note{min-height:1.5em; margin-top:8px; font-size:15px; font-weight:600; color:#3b5b9a}
+.stage[data-mode="forest"] .note{color:#237a43}
 .actions{display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:wrap; margin-top:12px}
 .btn{
   font-size:18px; font-weight:700; padding:12px 24px; background:#fff; border:4px solid var(--ink); border-radius:999px; cursor:pointer;
@@ -168,67 +249,205 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
 .spark{position:fixed; z-index:200; pointer-events:none; font-size:20px; animation:spark .8s ease-out forwards}
 @keyframes spark{from{transform:translate(0,0) scale(.6); opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(180deg); opacity:0}}
 @media (hover:none){.hint{display:none}}
-@media (max-width:480px){#app{padding-inline:14px} .btn{padding:11px 18px} .btn.primary{padding:13px 24px}}
+@media (max-width:480px){#app{padding-inline:14px} .btn{padding:11px 18px} .btn.primary{padding:13px 24px} .paper{padding:30px 16px 22px}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none !important; transition-duration:.01ms !important}
-  .penguin .lid{transform:scaleY(0)}
+  .critter .lid{transform:scaleY(0)}
 }
 </style>
 </head>
-<body>
+<body data-view="home">
 
-<div class="clouds" aria-hidden="true"><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i></div>
-<canvas id="snow" aria-hidden="true"></canvas>
-<svg class="drift" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-  <path d="M0 50 Q120 10 240 44 T480 40 T720 48 T960 38 T1200 46 T1440 36 V120 H0Z" fill="#d3f0ff"/>
-  <path d="M0 78 Q90 38 190 70 T380 66 T570 74 T760 62 T950 76 T1140 64 T1330 74 T1440 66 V120 H0Z" fill="#fff" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
-</svg>
+<!-- ===== scenery: home ===== -->
+<div class="scene scene-home" aria-hidden="true">
+  <div class="home-dots"></div>
+  <svg class="ground" viewBox="0 0 1440 110" preserveAspectRatio="none">
+    <path d="M0 56 Q120 22 240 50 T480 46 T720 60 V110 H0Z" fill="#7ad36f" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
+    <path d="M720 60 Q840 30 960 52 T1200 44 T1440 50 V110 H720Z" fill="#fff" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
+  </svg>
+</div>
+
+<!-- ===== scenery: ice ===== -->
+<div class="scene scene-ice" aria-hidden="true">
+  <div class="clouds"><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i></div>
+  <canvas id="snow"></canvas>
+  <svg class="drift" viewBox="0 0 1440 120" preserveAspectRatio="none">
+    <path d="M0 50 Q120 10 240 44 T480 40 T720 48 T960 38 T1200 46 T1440 36 V120 H0Z" fill="#d3f0ff"/>
+    <path d="M0 78 Q90 38 190 70 T380 66 T570 74 T760 62 T950 76 T1140 64 T1330 74 T1440 66 V120 H0Z" fill="#fff" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
+  </svg>
+</div>
+
+<!-- ===== scenery: tropical rainforest ===== -->
+<div class="scene scene-forest" aria-hidden="true">
+  <div class="mist"></div>
+  <svg class="vine v1" viewBox="0 0 54 270" preserveAspectRatio="xMidYMin meet">
+    <path d="M27 0 Q8 70 28 135 Q46 200 26 268" fill="none" stroke="#17284b" stroke-width="10" stroke-linecap="round"/>
+    <path d="M27 0 Q8 70 28 135 Q46 200 26 268" fill="none" stroke="#3a8f3f" stroke-width="4" stroke-linecap="round"/>
+    <g fill="#5fd06c" stroke="#17284b" stroke-width="3">
+      <ellipse cx="12" cy="56" rx="13" ry="7" transform="rotate(-35 12 56)"/>
+      <ellipse cx="40" cy="110" rx="13" ry="7" transform="rotate(30 40 110)"/>
+      <ellipse cx="18" cy="170" rx="13" ry="7" transform="rotate(-30 18 170)"/>
+      <ellipse cx="38" cy="225" rx="13" ry="7" transform="rotate(35 38 225)"/>
+    </g>
+  </svg>
+  <svg class="vine v2" viewBox="0 0 54 270" preserveAspectRatio="xMidYMin meet">
+    <path d="M27 0 Q46 80 26 150 Q10 210 28 268" fill="none" stroke="#17284b" stroke-width="10" stroke-linecap="round"/>
+    <path d="M27 0 Q46 80 26 150 Q10 210 28 268" fill="none" stroke="#3a8f3f" stroke-width="4" stroke-linecap="round"/>
+    <g fill="#5fd06c" stroke="#17284b" stroke-width="3">
+      <ellipse cx="42" cy="70" rx="13" ry="7" transform="rotate(35 42 70)"/>
+      <ellipse cx="14" cy="140" rx="13" ry="7" transform="rotate(-30 14 140)"/>
+      <ellipse cx="36" cy="220" rx="13" ry="7" transform="rotate(30 36 220)"/>
+    </g>
+    <circle cx="26" cy="262" r="9" fill="#ff5d73" stroke="#17284b" stroke-width="3"/>
+  </svg>
+  <svg class="vine v3" viewBox="0 0 54 270" preserveAspectRatio="xMidYMin meet">
+    <path d="M27 0 Q14 90 28 180 Q38 230 27 268" fill="none" stroke="#17284b" stroke-width="10" stroke-linecap="round"/>
+    <path d="M27 0 Q14 90 28 180 Q38 230 27 268" fill="none" stroke="#3a8f3f" stroke-width="4" stroke-linecap="round"/>
+    <g fill="#5fd06c" stroke="#17284b" stroke-width="3">
+      <ellipse cx="14" cy="90" rx="13" ry="7" transform="rotate(-30 14 90)"/>
+      <ellipse cx="40" cy="190" rx="13" ry="7" transform="rotate(30 40 190)"/>
+    </g>
+  </svg>
+  <svg class="canopy" viewBox="0 0 1440 92" preserveAspectRatio="none">
+    <path d="M0 0H1440V48 Q1400 88 1350 60 Q1300 96 1240 64 Q1180 98 1120 62 Q1060 92 1000 58 Q940 96 880 62 Q820 90 760 56 Q700 94 640 60 Q580 92 520 58 Q460 96 400 62 Q340 90 280 56 Q220 94 160 60 Q100 92 50 60 Q20 76 0 64Z" fill="#2f8f4e" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
+  </svg>
+  <canvas id="rain"></canvas>
+  <svg class="bush" viewBox="0 0 1440 140" preserveAspectRatio="none">
+    <path d="M0 60 Q60 10 130 50 Q200 0 280 46 Q360 4 440 52 Q520 10 600 50 Q680 6 760 48 Q840 8 920 52 Q1000 4 1080 50 Q1160 10 1240 46 Q1320 6 1440 54 V140 H0Z" fill="#5cc265"/>
+    <path d="M0 92 Q70 50 150 86 Q230 46 310 84 Q390 48 470 88 Q550 50 630 84 Q710 46 790 86 Q870 52 950 84 Q1030 46 1110 88 Q1190 52 1270 84 Q1350 50 1440 86 V140 H0Z" fill="#2f9a52" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
+  </svg>
+</div>
 
 <main id="app">
-  <div class="top">
-    <button class="chip" id="snowBtn" type="button" aria-pressed="true">❄ Snow: on</button>
-  </div>
 
-  <section class="hero">
-    <h1><span>Ice</span> <span class="b">Breaker</span></h1>
-    <p class="tag">Pick a topic, pull a question, and get everyone talking.</p>
-    <div class="bubble" id="bubble" role="status" aria-live="polite">Hi! Pick a topic and let's break the ice!</div>
-    <div class="penguin-wrap" id="heroPenguin" title="Boop!"></div>
-    <div class="floe"></div>
+  <!-- ================= HOME: choose a mode ================= -->
+  <section class="view" id="v-home">
+    <div class="hero">
+      <h1><span>Ice</span> <span class="b">Breaker</span></h1>
+      <p class="tag">Two ways to start a great conversation. Who do you want to play with today?</p>
+    </div>
+
+    <h2 class="label">Choose a mode</h2>
+    <div class="modes">
+      <button class="mode" type="button" id="modeForest" style="--c:#ffd45e; --i:0">
+        <span class="pet" id="petMonkey"></span>
+        <h3>From stranger to friend</h3>
+        <span class="rec">💛 Recommended for First Date</span>
+        <p class="sub">36 questions in 3 levels that slowly go deeper, in a tropical rainforest. Tiếng Việt &amp; English.</p>
+        <span class="go">Let’s go</span>
+      </button>
+      <button class="mode" type="button" id="modeIce" style="--c:#8fdcff; --i:1">
+        <span class="pet" id="petPenguin"></span>
+        <h3>Let me know you more</h3>
+        <span class="rec">☕ Recommended for Coffee Date</span>
+        <p class="sub" id="iceSub">Random fun questions across 6 topics, on a snowy ice floe.</p>
+        <span class="go">Let’s go</span>
+      </button>
+    </div>
+
+    <h2 class="label" id="howTitle" style="margin-top:80px">📝 How to play</h2>
+    <section class="paper" aria-labelledby="howTitle">
+      <div class="how-grid">
+        <div class="how">
+          <h3>🐒 From stranger to friend</h3>
+          <ol>
+            <li>Sit face to face and pick Level 1.</li>
+            <li>Take turns reading each question aloud. Both of you answer it.</li>
+            <li>Go in order from Level 1 to Level 3. The questions get more personal as you go, so take your time (about 45 minutes in total).</li>
+            <li>Switch between Tiếng Việt and English anytime, and turn the rain on or off.</li>
+          </ol>
+        </div>
+        <div class="how">
+          <h3>🐧 Let me know you more</h3>
+          <ol>
+            <li>Pick a topic that matches your mood.</li>
+            <li>Tap Next for a random question. You won’t see a repeat until every question in that topic has come up.</li>
+            <li>Change topics whenever the chat needs a new direction.</li>
+          </ol>
+        </div>
+      </div>
+      <p class="rules"><b>Ground rules:</b> phones down, be honest, listen more than you talk, and it’s always okay to skip a question. Tip: use ← → keys to move and Esc to close a card.</p>
+    </section>
+
+    <footer><span>Made with ❤️ for fun conversations</span></footer>
   </section>
 
-  <section>
+  <!-- ================= RAINFOREST: 36 questions ================= -->
+  <section class="view" id="v-forest" hidden>
+    <div class="top">
+      <button class="chip" type="button" data-home data-t="back"></button>
+      <div class="top-r">
+        <div class="seg" role="group" aria-label="Language / Ngôn ngữ">
+          <button type="button" id="langVi" lang="vi">🇻🇳 Tiếng Việt</button>
+          <button type="button" id="langEn" lang="en">🇬🇧 English</button>
+        </div>
+        <button class="chip" id="rainBtn" type="button" aria-pressed="true"></button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1><span data-t="t1"></span><br><span class="b" data-t="t2"></span></h1>
+      <p class="tag" data-t="tag"></p>
+      <div class="bubble" id="fBubble" role="status" aria-live="polite"></div>
+      <div class="critter-wrap" id="heroMonkey" title="Boop!"></div>
+      <div class="branch"></div>
+    </div>
+
+    <h2 class="label" data-t="choose"></h2>
+    <div class="grid" id="levels"></div>
+    <p class="ftip" data-t="tip"></p>
+  </section>
+
+  <!-- ================= ICE: original ice breaker ================= -->
+  <section class="view" id="v-ice" hidden>
+    <div class="top">
+      <button class="chip" type="button" data-home>← Modes</button>
+      <div class="top-r">
+        <button class="chip" id="snowBtn" type="button" aria-pressed="true">❄ Snow: on</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1><span>Ice</span> <span class="b">Breaker</span></h1>
+      <p class="tag">Pick a topic, pull a question, and get everyone talking.</p>
+      <div class="bubble" id="bubble" role="status" aria-live="polite">Hi! Pick a topic and let’s break the ice!</div>
+      <div class="critter-wrap" id="heroPenguin" title="Boop!"></div>
+      <div class="floe"></div>
+    </div>
+
     <h2 class="label">Choose a topic</h2>
     <div class="grid" id="topics"></div>
-  </section>
 
-  <footer><span>Made with ❤️ for fun conversations</span></footer>
+    <footer><span>Made with ❤️ for fun conversations</span></footer>
+  </section>
 </main>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="qPill" aria-hidden="true">
-  <div class="stage" id="stage">
+  <div class="stage" id="stage" data-mode="ice">
     <div class="peek" id="peekPenguin"></div>
+    <div class="peek" id="peekMonkey"></div>
     <div class="card">
-      <button class="close" id="closeBtn" type="button" aria-label="Close and pick another topic">✕</button>
+      <button class="close" id="closeBtn" type="button" aria-label="Close">✕</button>
       <div class="pill" id="qPill"></div>
       <div class="question" id="qText" aria-live="polite"></div>
       <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
-      <div class="meta"><span id="counter"></span><span class="hint">Tip: use ← → keys, Esc to close</span></div>
+      <div class="meta"><span id="counter"></span><span class="hint" id="hint"></span></div>
       <div class="note" id="note"></div>
       <div class="actions">
-        <button class="btn" id="prevBtn" type="button" aria-label="Previous question">← Prev</button>
-        <button class="btn primary" id="nextBtn" type="button">Next →</button>
+        <button class="btn" id="prevBtn" type="button"></button>
+        <button class="btn primary" id="nextBtn" type="button"></button>
       </div>
       <div class="links">
-        <button class="link" id="backBtn" type="button">Pick another topic</button>
-        <button class="link" id="resetBtn" type="button">↺ Start this topic over</button>
+        <button class="link" id="backBtn" type="button"></button>
+        <button class="link" id="resetBtn" type="button"></button>
+        <button class="link" id="langMini" type="button"></button>
       </div>
     </div>
   </div>
 </div>
 
 <template id="penguinTpl">
-<svg class="penguin" viewBox="0 0 200 244" role="img" aria-label="Cartoon penguin in a beanie and scarf">
+<svg class="critter" viewBox="0 0 200 244" role="img" aria-label="Cartoon penguin in a beanie and scarf">
   <g fill="#ffa733" stroke="#17284b" stroke-width="5" stroke-linejoin="round">
     <ellipse cx="72" cy="224" rx="26" ry="11"/><ellipse cx="128" cy="224" rx="26" ry="11"/>
   </g>
@@ -252,9 +471,46 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
 </svg>
 </template>
 
+<template id="monkeyTpl">
+<svg class="critter" viewBox="0 0 200 244" role="img" aria-label="Cartoon monkey with a hibiscus flower">
+  <g class="tail">
+    <path d="M140 200 Q192 204 190 158 Q188 122 162 126 Q144 130 150 148 Q156 160 170 152" fill="none" stroke="#17284b" stroke-width="16" stroke-linecap="round"/>
+    <path d="M140 200 Q192 204 190 158 Q188 122 162 126 Q144 130 150 148 Q156 160 170 152" fill="none" stroke="#a8652e" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <g fill="#f3c98b" stroke="#17284b" stroke-width="5">
+    <ellipse cx="74" cy="226" rx="22" ry="11"/><ellipse cx="126" cy="226" rx="22" ry="11"/>
+  </g>
+  <g class="flip-l"><path d="M62 148 Q20 160 24 204 Q40 212 52 200 Q50 178 72 168Z" fill="#a8652e" stroke="#17284b" stroke-width="5" stroke-linejoin="round"/></g>
+  <g class="flip-r"><path d="M138 148 Q180 160 176 204 Q160 212 148 200 Q150 178 128 168Z" fill="#a8652e" stroke="#17284b" stroke-width="5" stroke-linejoin="round"/></g>
+  <ellipse cx="100" cy="176" rx="50" ry="52" fill="#a8652e" stroke="#17284b" stroke-width="5"/>
+  <ellipse cx="100" cy="184" rx="30" ry="34" fill="#f3c98b"/>
+  <circle cx="38" cy="92" r="22" fill="#a8652e" stroke="#17284b" stroke-width="5"/>
+  <circle cx="38" cy="92" r="11" fill="#f3c98b"/>
+  <circle cx="162" cy="92" r="22" fill="#a8652e" stroke="#17284b" stroke-width="5"/>
+  <circle cx="162" cy="92" r="11" fill="#f3c98b"/>
+  <circle cx="100" cy="88" r="60" fill="#a8652e" stroke="#17284b" stroke-width="5"/>
+  <path d="M90 30 Q90 12 106 14 Q98 20 104 30" fill="#a8652e" stroke="#17284b" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M100 66 Q86 52 70 60 Q54 70 60 94 Q56 128 100 134 Q144 128 140 94 Q146 70 130 60 Q114 52 100 66Z" fill="#f3c98b" stroke="#17284b" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="81" cy="86" r="13" fill="#fff" stroke="#17284b" stroke-width="4"/>
+  <circle cx="119" cy="86" r="13" fill="#fff" stroke="#17284b" stroke-width="4"/>
+  <circle cx="83" cy="89" r="6" fill="#17284b"/><circle cx="117" cy="89" r="6" fill="#17284b"/>
+  <circle cx="85" cy="86" r="2.2" fill="#fff"/><circle cx="119" cy="86" r="2.2" fill="#fff"/>
+  <ellipse class="lid" cx="81" cy="86" rx="14" ry="14" fill="#e6b06e"/>
+  <ellipse class="lid" cx="119" cy="86" rx="14" ry="14" fill="#e6b06e"/>
+  <ellipse cx="66" cy="112" rx="8" ry="5" fill="#ff8fab" opacity=".9"/><ellipse cx="134" cy="112" rx="8" ry="5" fill="#ff8fab" opacity=".9"/>
+  <ellipse cx="94" cy="106" rx="2.6" ry="3.6" fill="#17284b"/><ellipse cx="106" cy="106" rx="2.6" ry="3.6" fill="#17284b"/>
+  <path d="M84 116 Q100 134 116 116 Q100 122 84 116Z" fill="#c2443f" stroke="#17284b" stroke-width="4" stroke-linejoin="round"/>
+  <g stroke="#17284b" stroke-width="3">
+    <circle cx="150" cy="30" r="9" fill="#ff5d73"/><circle cx="164" cy="38" r="9" fill="#ff5d73"/>
+    <circle cx="160" cy="54" r="9" fill="#ff5d73"/><circle cx="142" cy="52" r="9" fill="#ff5d73"/>
+    <circle cx="138" cy="38" r="9" fill="#ff5d73"/><circle cx="151" cy="43" r="6" fill="#ffd45e"/>
+  </g>
+</svg>
+</template>
+
 <script>
 /* ------------------------------------------------------------------
-   Question database (unchanged from the original game)
+   "Let me know you more" question database (unchanged from the original game)
 ------------------------------------------------------------------- */
 const questions = {
             "Life": [
@@ -310,7 +566,6 @@ const questions = {
                 "Are you a morning or a night person?",
                 "What's the last product you returned?",
                 "Are you a cat or a dog person?",
-    
             ],
             "Deep": [
                 "What was the hardest decision you've ever had to make?",
@@ -364,7 +619,7 @@ const questions = {
                 "What's your most powerful and vivid memory?",
                 "What was the worst haircut you've ever had?",
                 "Who's the worst boss you've ever had and why?",
-],
+            ],
             "If you could...": [
                 "If you could change one thing about the way you were raised, what would you change?",
                 "If you could have any celebrity be your best friend, who would it be?",
@@ -418,10 +673,9 @@ const questions = {
                 "Would you rather end the life of one human or 100 puppies and kittens?",
                 "Would you rather save money or save time?",
                 "Would you rather die before your partner or after?"
-        ]
+            ]
         };
 
-/* Topic look & feel. Keys must match the keys in `questions`. */
 const topics = [
   {key:"Life",                emoji:"🌟", color:"#ff9ebd", desc:"Personal questions to get to know you better"},
   {key:"Random",              emoji:"🎲", color:"#ffd45e", desc:"Random questions to lighten the mood"},
@@ -431,16 +685,169 @@ const topics = [
   {key:"Would you rather...", emoji:"⚖️", color:"#6ccfff", desc:"Tough “Would you rather…” choices"}
 ];
 
+/* ------------------------------------------------------------------
+   "From stranger to friend": 36 questions, 3 levels × 12, VI + EN
+------------------------------------------------------------------- */
+const levels = [
+  {
+    emoji:"🌱", color:"#ffd45e",
+    name:{vi:"Làm quen", en:"Warm-up"},
+    desc:{vi:"Những câu hỏi nhẹ nhàng để bắt đầu", en:"Light questions to get comfortable"},
+    q:{
+      vi:[
+        "Nếu được rủ bất kì ai trên thế giới đi ăn tối, đó sẽ là ai?",
+        "Bạn có muốn trở nên nổi tiếng không? Nếu có, bạn muốn nổi tiếng bằng cách nào?",
+        "Trước khi gọi điện cho ai đó, bạn có nhẩm trước nội dung sẽ nói không? Tại sao?",
+        "Yếu tố nào tạo nên một ngày hoàn hảo với bạn?",
+        "Lần gần nhất bạn ngân nga một bài hát cho chính mình là khi nào? Bạn đã từng hát cho ai nghe chưa?",
+        "Giả sử bạn được sống đến tuổi 90, bạn muốn giữ ngoại hình của tuổi 20 hay trí tuệ của tuổi 20?",
+        "Bạn có linh cảm bí mật nào về cái chết của mình không?",
+        "Kể ra 3 điều dường như là điểm chung giữa bạn và đối phương.",
+        "Bạn cảm thấy biết ơn điều gì nhất trong cuộc sống?",
+        "Nếu được thay đổi cách bạn được nuôi dạy từ nhỏ, bạn muốn thay đổi điều gì?",
+        "Dành ra 4 phút để kể về cuộc đời bạn, càng chi tiết càng tốt.",
+        "Nếu sáng mai thức dậy, bạn được ban cho một tính cách hoặc một khả năng mới, đó sẽ là gì?"
+      ],
+      en:[
+        "If you could invite anyone in the world to dinner, who would it be?",
+        "Would you like to be famous? If so, in what way?",
+        "Before making a phone call, do you ever rehearse what you’re going to say? Why?",
+        "What would make a “perfect” day for you?",
+        "When did you last sing or hum to yourself? Have you ever sung for someone else?",
+        "If you could live to 90, would you rather keep the body of a 20-year-old or the mind of a 20-year-old?",
+        "Do you have a secret hunch about how you will die?",
+        "Name three things you and the other person seem to have in common.",
+        "What are you most grateful for in your life?",
+        "If you could change anything about the way you were raised, what would it be?",
+        "Take four minutes to tell your life story in as much detail as possible.",
+        "If you could wake up tomorrow with one new quality or ability, what would it be?"
+      ]
+    }
+  },
+  {
+    emoji:"🌴", color:"#ffaa72",
+    name:{vi:"Mở lòng", en:"Opening up"},
+    desc:{vi:"Giá trị, kỷ niệm và những điều quan trọng", en:"Values, memories and what matters most"},
+    q:{
+      vi:[
+        "Nếu có một quả cầu pha lê có thể cho bạn biết sự thật về bản thân, cuộc sống, tương lai hay bất kỳ điều gì, bạn muốn biết điều gì?",
+        "Có điều gì bạn mong muốn làm từ lâu không? Tại sao bạn vẫn chưa thực hiện?",
+        "Thành tựu lớn nhất trong cuộc đời bạn là gì?",
+        "Bạn coi trọng điều gì nhất trong một tình bạn?",
+        "Kỷ niệm quý giá nhất của bạn là gì?",
+        "Còn ký ức tồi tệ nhất thì sao?",
+        "Nếu biết rằng một năm nữa bạn sẽ rời xa thế giới này, bạn có muốn thay đổi điều gì trong cách sống hiện tại không? Vì sao?",
+        "Tình bạn có ý nghĩa như thế nào với bạn?",
+        "Tình yêu nói riêng và tình cảm nói chung đóng vai trò gì trong cuộc sống của bạn?",
+        "Lần lượt chia sẻ 5 điểm tích cực của nhau theo suy nghĩ và cảm nhận của bạn.",
+        "Gia đình bạn thân thiết, ấm cúng đến mức nào? Bạn có cảm thấy tuổi thơ mình hạnh phúc hơn người khác không?",
+        "Bạn cảm thấy thế nào về mối quan hệ với mẹ của mình?"
+      ],
+      en:[
+        "If a crystal ball could tell you the truth about yourself, your life, the future or anything else, what would you want to know?",
+        "Is there something you’ve dreamed of doing for a long time? Why haven’t you done it yet?",
+        "What is the greatest accomplishment of your life?",
+        "What do you value most in a friendship?",
+        "What is your most treasured memory?",
+        "What is your worst memory?",
+        "If you knew you would leave this world in one year, would you change anything about how you live now? Why?",
+        "What does friendship mean to you?",
+        "What role do love and affection play in your life?",
+        "Take turns sharing five positive things about each other.",
+        "How close and warm is your family? Do you feel your childhood was happier than most people’s?",
+        "How do you feel about your relationship with your mother?"
+      ]
+    }
+  },
+  {
+    emoji:"🌺", color:"#ff9ebd",
+    name:{vi:"Gần gũi hơn", en:"Getting closer"},
+    desc:{vi:"Những khoảnh khắc chân thành và cởi mở", en:"Honest, open moments together"},
+    q:{
+      vi:[
+        "Mỗi người đặt 3 câu trần thuật đúng sự thật với chủ ngữ là “chúng ta”. Ví dụ: “Chúng ta đều đang ngồi ở đây và cảm thấy…”",
+        "Hoàn thành câu sau: “Tôi ước có một người mà tôi có thể chia sẻ…”",
+        "Nếu bạn muốn trở thành bạn thân của đối phương, hãy chia sẻ một điều quan trọng mà họ cần biết về bạn.",
+        "Hãy nói cho đối phương biết điều bạn thích ở họ. Hãy thật thành thật, nói những điều bạn thường không nói với một người mới gặp.",
+        "Chia sẻ với đối phương khoảnh khắc xấu hổ nhất của bạn.",
+        "Lần cuối bạn khóc trước mặt người khác là khi nào? Còn lần khóc một mình?",
+        "Nói với đối phương một điều bạn đã quý mến ở họ.",
+        "Theo bạn, có vấn đề nào nghiêm trọng đến mức không thể đem ra đùa cợt không?",
+        "Nếu tối nay bạn phải từ giã cõi đời mà không thể liên lạc với ai, điều gì chưa nói khiến bạn hối tiếc nhất? Tại sao bạn vẫn chưa nói ra?",
+        "Nhà bạn bị hoả hoạn, mọi đồ vật chìm trong biển lửa. Sau khi cứu được mọi người và thú cưng, bạn còn thời gian cứu thêm một món đồ. Đó là món gì? Tại sao?",
+        "Trong gia đình, sự ra đi của ai sẽ khiến bạn day dứt nhất? Tại sao?",
+        "Chia sẻ một vấn đề của bản thân và hỏi đối phương xem họ sẽ xử lý thế nào."
+      ],
+      en:[
+        "Each make three true “we” statements. For example: “We are both sitting here feeling…”",
+        "Complete this sentence: “I wish I had someone with whom I could share…”",
+        "If you were going to become close friends with the other person, share something important they should know about you.",
+        "Tell the other person what you like about them. Be very honest, and say things you might not say to someone you’ve just met.",
+        "Share the most embarrassing moment of your life.",
+        "When did you last cry in front of another person? And by yourself?",
+        "Tell the other person something you already like about them.",
+        "What, if anything, is too serious to be joked about?",
+        "If you were to die this evening with no chance to talk to anyone, what would you most regret not having told someone? Why haven’t you told them yet?",
+        "Your house catches fire with everything you own inside. After saving your loved ones and pets, you have time to save one item. What would it be? Why?",
+        "Of everyone in your family, whose death would you find hardest to bear? Why?",
+        "Share a personal problem and ask the other person how they would handle it."
+      ]
+    }
+  }
+];
+
+const UI = {
+  vi:{
+    back:"← Chọn chế độ", rainOn:"🌧 Mưa: bật", rainOff:"🌧 Mưa: tắt",
+    t1:"Từ người lạ", t2:"thành bạn thân",
+    tag:"36 câu hỏi giúp hai người lạ trở nên gần gũi. Lần lượt cùng nhau trả lời từng câu nhé!",
+    choose:"Chọn vòng", level:"Vòng", count:"12 câu hỏi", done:"✓ Đã xong",
+    tip:"🌿 Mẹo: Hãy đi lần lượt từ Vòng 1 đến Vòng 3. Câu hỏi sẽ sâu dần lên.",
+    hello:"Chào bạn! Chọn một vòng để bắt đầu nhé 🍌",
+    next:"Tiếp →", prev:"← Trước", nextLevel:"Sang vòng tiếp →", finish:"Hoàn thành 🎉",
+    pickLevel:"Chọn vòng khác", restart:"↺ Làm lại vòng này", switchLang:"🌐 Switch to English",
+    hint:"Mẹo: dùng phím ← →, Esc để đóng", close:"Đóng",
+    qOf:(a,b) => "Câu " + a + " / " + b,
+    levelUp:n => "Lên Vòng " + n + "! Câu hỏi sẽ sâu hơn một chút 🌿",
+    fresh:"Bắt đầu lại vòng này 🌱",
+    finished:"Tuyệt vời! Hai bạn đã đi hết 36 câu 🎉 Thử nhìn vào mắt nhau 4 phút xem sao 👀",
+    quips:["Ú òa! Chọn một vòng nào! 🍌","Đừng ngại, ai cũng từng là người lạ mà!","Nghe tiếng mưa rừng thật thư giãn ☔","Mẹo nhỏ: lắng nghe nhiều hơn nói nhé 👂","Ối, nhột quá! 🐒"]
+  },
+  en:{
+    back:"← Modes", rainOn:"🌧 Rain: on", rainOff:"🌧 Rain: off",
+    t1:"From stranger", t2:"to friend",
+    tag:"36 questions that bring two strangers closer. Take turns and answer each one together!",
+    choose:"Choose a level", level:"Level", count:"12 questions", done:"✓ Done",
+    tip:"🌿 Tip: go in order from Level 1 to Level 3. The questions get deeper as you go.",
+    hello:"Hi there! Pick a level to start 🍌",
+    next:"Next →", prev:"← Prev", nextLevel:"Next level →", finish:"Finish 🎉",
+    pickLevel:"Pick another level", restart:"↺ Restart this level", switchLang:"🌐 Đổi sang Tiếng Việt",
+    hint:"Tip: use ← → keys, Esc to close", close:"Close",
+    qOf:(a,b) => "Question " + a + " of " + b,
+    levelUp:n => "Level " + n + "! Things get a little deeper now 🌿",
+    fresh:"Level restarted 🌱",
+    finished:"Amazing! You finished all 36 questions 🎉 Now try looking into each other’s eyes for 4 minutes 👀",
+    quips:["Ooh ooh! Pick a level! 🍌","Don’t be shy, everyone starts as a stranger!","Rainforest rain is so relaxing ☔","Tiny tip: listen more than you talk 👂","Boop! That tickles! 🐒"]
+  }
+};
+
 const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const app = $("#app"), overlay = $("#overlay"), stage = $("#stage");
-const bubble = $("#bubble"), tpl = $("#penguinTpl");
-const HELLO = "Hi! Pick a topic and let's break the ice!";
+const bubble = $("#bubble"), fBubble = $("#fBubble");
+const HELLO = "Hi! Pick a topic and let’s break the ice!";
 
-/* ---------- penguins ---------- */
-const hero = tpl.content.cloneNode(true); $("#heroPenguin").appendChild(hero);
-const peek = tpl.content.cloneNode(true); $("#peekPenguin").appendChild(peek);
-const heroSvg = $("#heroPenguin .penguin"), peekSvg = $("#peekPenguin .penguin");
+/* ---------- critters ---------- */
+function mount(sel, tplId){
+  $(sel).appendChild($(tplId).content.cloneNode(true));
+  return $(sel + " .critter");
+}
+const heroSvg   = mount("#heroPenguin", "#penguinTpl");
+const peekSvg   = mount("#peekPenguin", "#penguinTpl");
+const petPeng   = mount("#petPenguin",  "#penguinTpl");
+const monkeySvg = mount("#heroMonkey",  "#monkeyTpl");
+const peekMonk  = mount("#peekMonkey",  "#monkeyTpl");
+const petMonk   = mount("#petMonkey",   "#monkeyTpl");
 
 function play(el, cls){
   if (reduce) return;
@@ -450,21 +857,30 @@ function play(el, cls){
     el.classList.remove(cls); el.removeEventListener("animationend", h);
   });
 }
-function say(text){
-  bubble.textContent = text;
-  play(bubble, "say");
-}
+function say(el, text){ el.textContent = text; play(el, "say"); }
+
 const quips = [
   "Waddle waddle! Pick a topic!", "Ice to meet you! 🧊", "Brrr! Warm up with a question.",
-  "Did you know? Some penguins propose with a pebble. 🪨", "Boop! That tickles!", "Let's get this chat rolling!"
+  "Did you know? Some penguins propose with a pebble. 🪨", "Boop! That tickles!", "Let’s get this chat rolling!"
 ];
-let quipI = 0;
-$("#heroPenguin").addEventListener("click", () => { play(heroSvg, "happy"); say(quips[quipI++ % quips.length]); });
+let quipI = 0, mQuipI = 0;
+$("#heroPenguin").addEventListener("click", () => { play(heroSvg, "happy"); say(bubble, quips[quipI++ % quips.length]); });
+$("#heroMonkey").addEventListener("click", () => { const q = T().quips; play(monkeySvg, "happy"); say(fBubble, q[mQuipI++ % q.length]); });
 
-/* ---------- topic cards ---------- */
+/* ---------- home: mode cards ---------- */
+const totalIce = Object.values(questions).reduce((a, l) => a + l.length, 0);
+$("#iceSub").textContent = totalIce + " random fun questions across " + topics.length + " topics, on a snowy ice floe.";
+$("#modeForest").addEventListener("click", () => { location.hash = "forest"; });
+$("#modeIce").addEventListener("click", () => { location.hash = "ice"; });
+$("#modeForest").addEventListener("pointerenter", () => play(petMonk, "happy"));
+$("#modeIce").addEventListener("pointerenter", () => play(petPeng, "happy"));
+document.querySelectorAll("[data-home]").forEach(b => b.addEventListener("click", () => {
+  history.pushState(null, "", location.pathname + location.search); route();
+}));
+
+/* ---------- ice: topic cards ---------- */
 const grid = $("#topics"), cards = {};
 topics.forEach((t, i) => {
-  const n = (questions[t.key] || []).length;
   const b = document.createElement("button");
   b.type = "button"; b.className = "topic";
   b.style.setProperty("--c", t.color); b.style.setProperty("--i", i);
@@ -473,38 +889,61 @@ topics.forEach((t, i) => {
   b.querySelector("p").textContent = t.desc;
   cards[t.key] = b.querySelector(".count");
   b.addEventListener("click", () => start(t, b));
-  b.addEventListener("pointerenter", () => say(t.desc + "!"));
-  b.addEventListener("focus", () => say(t.desc + "!"));
-  b.addEventListener("pointerleave", () => say(HELLO));
+  b.addEventListener("pointerenter", () => say(bubble, t.desc + "!"));
+  b.addEventListener("focus", () => say(bubble, t.desc + "!"));
+  b.addEventListener("pointerleave", () => say(bubble, HELLO));
   grid.appendChild(b);
 });
 
-
-/* ---------- game state ---------- */
-/* Every topic remembers which questions it has already shown (also across
-   page reloads). Each "Next" picks a RANDOM question that has not appeared
-   yet; when a topic runs out, it starts a fresh random round. */
+/* ---------- ice: game state ---------- */
 const STORE = "iceBreakerSeen.v1";
-let seen = {};   // topic key -> list of questions already shown
+let seen = {};
 try { seen = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { seen = {}; }
 function save(){ try { localStorage.setItem(STORE, JSON.stringify(seen)); } catch (e) {} }
 function seenOf(key){
-  const valid = new Set(questions[key] || []);               // ignore entries for questions that were edited away
+  const valid = new Set(questions[key] || []);
   seen[key] = (Array.isArray(seen[key]) ? seen[key] : []).filter(q => valid.has(q));
   return seen[key];
 }
 
-let cur = null, hist = [], pos = -1, opener = null;         // hist = questions shown in this sitting, pos = current one
-const qText = $("#qText"), qPill = $("#qPill"), bar = $("#bar"), counter = $("#counter"), note = $("#note");
-const prevBtn = $("#prevBtn"), nextBtn = $("#nextBtn");
+/* ---------- forest: state ---------- */
+const FSTORE = "iceBreaker36.v1";
+let fs = {lang:"vi", done:[false, false, false]};
+try {
+  const s = JSON.parse(localStorage.getItem(FSTORE));
+  if (s){
+    if (s.lang === "vi" || s.lang === "en") fs.lang = s.lang;
+    if (Array.isArray(s.done)) fs.done = [0, 1, 2].map(i => !!s.done[i]);
+  }
+} catch (e) {}
+function fsave(){ try { localStorage.setItem(FSTORE, JSON.stringify(fs)); } catch (e) {} }
+const T = () => UI[fs.lang];
 
+/* ---------- shared overlay ---------- */
+let mode = "ice", view = "home";
+let cur = null, hist = [], pos = -1, opener = null;
+let lvl = 0, lpos = 0, justFinished = false;
+const qText = $("#qText"), qPill = $("#qPill"), bar = $("#bar"), counter = $("#counter"), note = $("#note");
+const prevBtn = $("#prevBtn"), nextBtn = $("#nextBtn"), backBtn = $("#backBtn"), resetBtn = $("#resetBtn");
+const langMini = $("#langMini"), hint = $("#hint"), closeBtn = $("#closeBtn");
+
+function swapAnim(critter){
+  if (!reduce){ qText.classList.remove("swap"); void qText.offsetWidth; qText.classList.add("swap"); }
+  play(critter, "react");
+}
+function openOverlay(){
+  overlay.classList.add("open"); overlay.setAttribute("aria-hidden", "false"); app.inert = true;
+  nextBtn.focus({preventScroll:true});
+}
+
+/* ice mode */
 function pick(){
   const all = questions[cur.key] || [], s = seenOf(cur.key);
   let pool = all.filter(q => !s.includes(q)), reset = false;
-  if (!pool.length){                                         // everything has been shown: new round
+  if (!pool.length){
     const last = s[s.length - 1];
     seen[cur.key] = []; reset = true;
-    pool = all.filter(q => q !== last);                      // don't open the new round with the same question
+    pool = all.filter(q => q !== last);
     if (!pool.length) pool = all.slice();
   }
   const q = pool[Math.floor(Math.random() * pool.length)];
@@ -524,57 +963,114 @@ function render(){
   counter.textContent = "Seen " + s + " of " + n;
   bar.style.width = (s / n * 100) + "%";
   prevBtn.disabled = pos <= 0;
-  if (!reduce){ qText.classList.remove("swap"); void qText.offsetWidth; qText.classList.add("swap"); }
-  play(peekSvg, "react");
+  swapAnim(peekSvg);
 }
 function start(t, from){
+  mode = "ice"; stage.dataset.mode = "ice";
   cur = t; opener = from; hist = []; pos = -1;
   stage.style.setProperty("--c", t.color);
   qPill.textContent = t.emoji + "  " + t.key;
-  overlay.classList.add("open"); overlay.setAttribute("aria-hidden", "false"); app.inert = true;
-  next(); nextBtn.focus({preventScroll:true});
+  prevBtn.textContent = "← Prev"; nextBtn.textContent = "Next →";
+  prevBtn.setAttribute("aria-label", "Previous question");
+  backBtn.textContent = "Pick another topic"; resetBtn.textContent = "↺ Start this topic over";
+  hint.textContent = "Tip: use ← → keys, Esc to close"; closeBtn.setAttribute("aria-label", "Close and pick another topic");
+  langMini.hidden = true;
+  iceNext(); openOverlay();
 }
-function next(){
-  if (!cur) return;
+function iceNext(){
   note.textContent = "";
-  if (pos < hist.length - 1){ pos++; }                       // after "Prev", step forward through what was already shown
+  if (pos < hist.length - 1){ pos++; }
   else {
     const r = pick(); hist.push(r.q); pos++;
-    if (r.reset) note.textContent = "You've seen all " + r.total + "! Starting a fresh random round 🔀";
+    if (r.reset) note.textContent = "You’ve seen all " + r.total + "! Starting a fresh random round 🔀";
   }
   render();
 }
-function prev(){ if (cur && pos > 0){ pos--; note.textContent = ""; render(); } }
+
+/* forest mode */
+function startLevel(i, from){
+  mode = "forest"; stage.dataset.mode = "forest";
+  lvl = i; lpos = 0; opener = from; justFinished = false;
+  note.textContent = ""; langMini.hidden = false;
+  fRender(); openOverlay();
+}
+function fLabels(){
+  const t = T();
+  prevBtn.textContent = t.prev; prevBtn.setAttribute("aria-label", t.prev);
+  backBtn.textContent = t.pickLevel; resetBtn.textContent = t.restart;
+  langMini.textContent = t.switchLang; hint.textContent = t.hint; closeBtn.setAttribute("aria-label", t.close);
+}
+function fRender(anim = true){
+  const L = levels[lvl], qs = L.q[fs.lang], t = T();
+  stage.style.setProperty("--c", L.color);
+  qPill.textContent = L.emoji + "  " + t.level + " " + (lvl + 1) + " · " + L.name[fs.lang];
+  qText.textContent = qs[lpos];
+  counter.textContent = t.qOf(lpos + 1, qs.length);
+  bar.style.width = ((lpos + 1) / qs.length * 100) + "%";
+  prevBtn.disabled = lpos <= 0;
+  nextBtn.textContent = lpos === qs.length - 1 ? (lvl < levels.length - 1 ? t.nextLevel : t.finish) : t.next;
+  fLabels();
+  if (anim) swapAnim(peekMonk);
+}
+function fNext(){
+  const len = levels[lvl].q[fs.lang].length;
+  note.textContent = "";
+  if (lpos < len - 1){ lpos++; fRender(); return; }
+  fs.done[lvl] = true; fsave();
+  if (lvl < levels.length - 1){
+    lvl++; lpos = 0; fRender(); note.textContent = T().levelUp(lvl + 1);
+  } else {
+    justFinished = true; close();
+  }
+}
+
+/* dispatch */
+function next(){ if (mode === "forest") fNext(); else if (cur) iceNext(); }
+function prev(){
+  note.textContent = "";
+  if (mode === "forest"){ if (lpos > 0){ lpos--; fRender(); } return; }
+  if (cur && pos > 0){ pos--; render(); }
+}
 function startOver(){
+  if (mode === "forest"){ lpos = 0; fRender(); note.textContent = T().fresh; return; }
   if (!cur) return;
   seen[cur.key] = []; save(); hist = []; pos = -1;
-  next(); note.textContent = "Fresh start! 🎲";
+  iceNext(); note.textContent = "Fresh start! 🎲";
 }
-function close(){
+function close(silent){
+  if (!overlay.classList.contains("open")) return;
   overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true"); app.inert = false;
-  updateCounts();
+  if (silent) return;
   if (opener) opener.focus({preventScroll:true});
-  play(heroSvg, "happy"); say(HELLO);
+  if (mode === "forest"){
+    renderLevels(); play(monkeySvg, "happy");
+    say(fBubble, justFinished ? T().finished : T().hello); justFinished = false;
+  } else {
+    updateCounts(); play(heroSvg, "happy"); say(bubble, HELLO);
+  }
 }
 
 function burst(el){
   if (reduce) return;
   const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const forest = mode === "forest";
   for (let i = 0; i < 9; i++){
-    const s = document.createElement("span"); s.className = "spark"; s.textContent = i % 2 ? "❄" : "✦";
+    const s = document.createElement("span"); s.className = "spark";
+    s.textContent = forest ? (i % 2 ? "🍃" : "✦") : (i % 2 ? "❄" : "✦");
     const a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 60;
     s.style.left = cx + "px"; s.style.top = cy + "px";
     s.style.setProperty("--dx", Math.cos(a) * d + "px"); s.style.setProperty("--dy", Math.sin(a) * d - 20 + "px");
-    s.style.color = ["#5ec8ff", "#fff", "#ffd45e"][i % 3];
+    s.style.color = forest ? ["#4cc25e", "#ffd45e", "#ff5d73"][i % 3] : ["#5ec8ff", "#fff", "#ffd45e"][i % 3];
     document.body.appendChild(s); setTimeout(() => s.remove(), 850);
   }
 }
 
 nextBtn.addEventListener("click", () => { next(); burst(nextBtn); });
 prevBtn.addEventListener("click", prev);
-$("#closeBtn").addEventListener("click", close);
-$("#backBtn").addEventListener("click", close);
-$("#resetBtn").addEventListener("click", startOver);
+closeBtn.addEventListener("click", () => close());
+backBtn.addEventListener("click", () => close());
+resetBtn.addEventListener("click", startOver);
+langMini.addEventListener("click", () => setLang(fs.lang === "vi" ? "en" : "vi"));
 overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
 document.addEventListener("keydown", e => {
   if (!overlay.classList.contains("open")) return;
@@ -582,26 +1078,61 @@ document.addEventListener("keydown", e => {
   else if (e.key === "ArrowRight"){ next(); burst(nextBtn); }
   else if (e.key === "ArrowLeft") prev();
   else if (e.key === "Tab"){
-    const f = [...overlay.querySelectorAll("button:not(:disabled)")];
+    const f = [...overlay.querySelectorAll("button:not(:disabled):not([hidden])")];
     const first = f[0], last = f[f.length - 1];
     if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
   }
 });
 
+/* ---------- forest: level cards + language ---------- */
+const levelGrid = $("#levels");
+function renderLevels(){
+  const t = T();
+  levelGrid.innerHTML = "";
+  levels.forEach((L, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "topic";
+    b.style.setProperty("--c", L.color); b.style.setProperty("--i", i);
+    b.innerHTML = '<span class="emoji" aria-hidden="true">' + L.emoji + '</span><span class="lvl"></span><h3></h3><p></p><span class="count"></span>';
+    b.querySelector(".lvl").textContent = t.level + " " + (i + 1);
+    b.querySelector("h3").textContent = L.name[fs.lang];
+    b.querySelector("p").textContent = L.desc[fs.lang];
+    const c = b.querySelector(".count");
+    c.textContent = fs.done[i] ? t.done : t.count;
+    c.classList.toggle("done", fs.done[i]);
+    b.addEventListener("click", () => startLevel(i, b));
+    b.addEventListener("pointerenter", () => say(fBubble, L.desc[fs.lang] + "!"));
+    b.addEventListener("focus", () => say(fBubble, L.desc[fs.lang] + "!"));
+    b.addEventListener("pointerleave", () => say(fBubble, T().hello));
+    levelGrid.appendChild(b);
+  });
+}
+function applyLang(){
+  const t = T();
+  document.querySelectorAll("#v-forest [data-t]").forEach(el => { el.textContent = t[el.dataset.t]; });
+  $("#langVi").setAttribute("aria-pressed", String(fs.lang === "vi"));
+  $("#langEn").setAttribute("aria-pressed", String(fs.lang === "en"));
+  rainBtn.textContent = rainOn ? t.rainOn : t.rainOff;
+  document.documentElement.lang = view === "forest" ? fs.lang : "en";
+  renderLevels();
+}
+function setLang(l){
+  fs.lang = l; fsave(); applyLang();
+  say(fBubble, T().hello);
+  if (overlay.classList.contains("open") && mode === "forest") fRender();
+}
+$("#langVi").addEventListener("click", () => setLang("vi"));
+$("#langEn").addEventListener("click", () => setLang("en"));
+
 /* ---------- snow ---------- */
 const cv = $("#snow"), ctx = cv.getContext("2d"), snowBtn = $("#snowBtn");
-let flakes = [], snowOn = !reduce, raf = 0;
+let flakes = [], snowOn = !reduce, snowRaf = 0;
 function mk(anywhere){
   return {x: Math.random() * innerWidth, y: anywhere ? Math.random() * innerHeight : -12,
           r: 2.5 + Math.random() * 4.5, vy: .5 + Math.random() * 1.1, p: Math.random() * 6.28, s: .01 + Math.random() * .02, a: 8 + Math.random() * 22};
 }
-function resize(){
-  const d = Math.min(devicePixelRatio || 1, 2);
-  cv.width = innerWidth * d; cv.height = innerHeight * d; ctx.setTransform(d, 0, 0, d, 0, 0);
-  flakes = Array.from({length: Math.round(Math.min(110, innerWidth / 11))}, () => mk(true));
-}
-function tick(){
+function snowTick(){
   ctx.clearRect(0, 0, innerWidth, innerHeight);
   ctx.fillStyle = "#fff"; ctx.strokeStyle = "#8fd3f5"; ctx.lineWidth = 1.5;
   for (const f of flakes){
@@ -609,16 +1140,81 @@ function tick(){
     if (f.y > innerHeight + 12) Object.assign(f, mk(false));
     ctx.beginPath(); ctx.arc(f.x + Math.sin(f.p) * f.a, f.y, f.r, 0, 6.2832); ctx.fill(); ctx.stroke();
   }
-  raf = requestAnimationFrame(tick);
+  snowRaf = requestAnimationFrame(snowTick);
 }
-function setSnow(on){
-  snowOn = on; snowBtn.setAttribute("aria-pressed", String(on)); snowBtn.textContent = on ? "❄ Snow: on" : "❄ Snow: off";
-  cancelAnimationFrame(raf); ctx.clearRect(0, 0, innerWidth, innerHeight);
-  if (on) tick();
+snowBtn.addEventListener("click", () => {
+  snowOn = !snowOn; snowBtn.setAttribute("aria-pressed", String(snowOn));
+  snowBtn.textContent = snowOn ? "❄ Snow: on" : "❄ Snow: off"; runEffects();
+});
+
+/* ---------- rain ---------- */
+const rc = $("#rain"), rctx = rc.getContext("2d"), rainBtn = $("#rainBtn");
+let drops = [], splashes = [], rainOn = !reduce, rainRaf = 0;
+function mkDrop(anywhere){
+  return {x: Math.random() * (innerWidth + 200), y: anywhere ? Math.random() * innerHeight : -30 - Math.random() * 120,
+          l: 14 + Math.random() * 16, v: 9 + Math.random() * 7};
 }
-snowBtn.addEventListener("click", () => setSnow(!snowOn));
+function rainTick(){
+  rctx.clearRect(0, 0, innerWidth, innerHeight);
+  rctx.lineCap = "round"; rctx.strokeStyle = "rgba(235,248,255,.9)"; rctx.lineWidth = 2.5;
+  rctx.beginPath();
+  for (const d of drops){
+    d.y += d.v; d.x -= d.v * .22;
+    if (d.y > innerHeight){
+      if (Math.random() < .4) splashes.push({x: d.x, y: innerHeight - 8 - Math.random() * 70, t: 0});
+      Object.assign(d, mkDrop(false));
+    }
+    rctx.moveTo(d.x, d.y); rctx.lineTo(d.x + d.l * .22, d.y - d.l);
+  }
+  rctx.stroke();
+  rctx.lineWidth = 2;
+  splashes = splashes.filter(s => s.t < 16);
+  for (const s of splashes){
+    s.t++;
+    rctx.strokeStyle = "rgba(235,248,255," + (1 - s.t / 16) + ")";
+    rctx.beginPath(); rctx.ellipse(s.x, s.y, 3 + s.t * 1.1, 1 + s.t * .35, 0, Math.PI, 2 * Math.PI); rctx.stroke();
+  }
+  rainRaf = requestAnimationFrame(rainTick);
+}
+rainBtn.addEventListener("click", () => {
+  rainOn = !rainOn; rainBtn.setAttribute("aria-pressed", String(rainOn));
+  rainBtn.textContent = rainOn ? T().rainOn : T().rainOff; runEffects();
+});
+
+function resize(){
+  const d = Math.min(devicePixelRatio || 1, 2);
+  for (const [c, x] of [[cv, ctx], [rc, rctx]]){ c.width = innerWidth * d; c.height = innerHeight * d; x.setTransform(d, 0, 0, d, 0, 0); }
+  flakes = Array.from({length: Math.round(Math.min(110, innerWidth / 11))}, () => mk(true));
+  drops = Array.from({length: Math.round(Math.min(150, innerWidth / 8))}, () => mkDrop(true));
+}
+function runEffects(){
+  cancelAnimationFrame(snowRaf); cancelAnimationFrame(rainRaf);
+  ctx.clearRect(0, 0, innerWidth, innerHeight); rctx.clearRect(0, 0, innerWidth, innerHeight); splashes = [];
+  if (view === "ice" && snowOn) snowTick();
+  if (view === "forest" && rainOn) rainTick();
+  document.body.classList.toggle("raining", view === "forest" && rainOn);
+}
 addEventListener("resize", resize);
-resize(); setSnow(snowOn); updateCounts();
+
+/* ---------- views (#forest, #ice, or home) ---------- */
+function route(){
+  const h = location.hash.slice(1);
+  const v = (h === "forest" || h === "ice") ? h : "home";
+  close(true);
+  view = v; document.body.dataset.view = v;
+  ["home", "forest", "ice"].forEach(k => { $("#v-" + k).hidden = k !== v; });
+  document.documentElement.lang = v === "forest" ? fs.lang : "en";
+  scrollTo(0, 0);
+  runEffects();
+  if (v === "forest"){ applyLang(); say(fBubble, T().hello); play(monkeySvg, "happy"); }
+  if (v === "ice"){ updateCounts(); say(bubble, HELLO); play(heroSvg, "happy"); }
+}
+addEventListener("hashchange", route);
+
+rainBtn.setAttribute("aria-pressed", String(rainOn));
+snowBtn.setAttribute("aria-pressed", String(snowOn));
+snowBtn.textContent = snowOn ? "❄ Snow: on" : "❄ Snow: off";
+resize(); applyLang(); updateCounts(); route();
 </script>
 </body>
 </html>
