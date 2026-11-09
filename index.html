@@ -24,7 +24,11 @@ body{
   margin:0; min-height:100vh; color:var(--ink); font-family:var(--font); overflow-x:hidden;
   background:#e8f9ff;
 }
-body[data-view="home"]{background:linear-gradient(100deg,#d9f7c8 0%,#fff6d4 50%,#d6f2ff 100%) fixed}
+/* home: sunny half for the monkey (left), sky-blue half for the penguin (right) */
+body[data-view="home"]{background:
+  linear-gradient(#ffe08a,#fff4cf) left top / 50% 100% no-repeat fixed,
+  linear-gradient(#7fd3ff,#d9f3ff) right top / 50% 100% no-repeat fixed,
+  #fff4cf}
 body[data-view="ice"]{background:linear-gradient(#72d0ff 0%,#b5e7ff 40%,#e8f9ff 100%) fixed}
 body[data-view="forest"]{background:linear-gradient(#5fc46a 0%,#a9e68a 45%,#eefbd8 100%) fixed}
 button{font-family:inherit; color:inherit}
@@ -49,7 +53,27 @@ body[data-view="forest"] .scene-forest{display:block}
 .c1{top:9%; animation-duration:85s}
 .c2{top:22%; transform:scale(.7); animation-duration:110s; animation-delay:-40s}
 .c3{top:36%; transform:scale(1.15); animation-duration:140s; animation-delay:-90s; opacity:.75}
+.c4{top:62%; transform:scale(.85); animation-duration:125s; animation-delay:-65s}
 @keyframes drift{to{left:calc(100vw + 240px)}}
+/* home clouds live only in the penguin's blue half, with the same ink outline as everything else */
+.scene-home .clouds{left:50%}
+.scene-home .cloud{opacity:1; animation-name:drift-half;
+  filter:drop-shadow(3px 0 0 var(--ink)) drop-shadow(-3px 0 0 var(--ink)) drop-shadow(0 3px 0 var(--ink)) drop-shadow(0 -3px 0 var(--ink))}
+@keyframes drift-half{to{left:calc(50vw + 240px)}}
+.scene-home .c1{top:5%; animation-duration:55s}
+.scene-home .c2{top:20%; animation-duration:70s}
+.scene-home .c3{top:44%; animation-duration:90s; animation-delay:-50s}
+.scene-home .c4{top:64%; animation-duration:80s; animation-delay:-30s}
+
+/* wavy seam between the two halves */
+.seam{position:fixed; top:0; left:calc(50% - 20px); width:40px; height:100%; z-index:0; pointer-events:none}
+
+/* the monkey's sun */
+.sun{position:fixed; top:22px; left:5%; width:clamp(96px,13vw,170px); z-index:0; pointer-events:none}
+.sun .rays{transform-box:fill-box; transform-origin:50% 50%; animation:spin 40s linear infinite}
+.sun .face{transform-box:fill-box; transform-origin:50% 50%; animation:bob 3.2s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:600px){.sun{top:8px; left:2%; width:76px}}
 #snow,#rain{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:1}
 .drift{position:fixed; left:0; bottom:0; width:100%; height:120px; z-index:1; pointer-events:none}
 
@@ -77,6 +101,7 @@ body.raining .mist{opacity:1}
 .seg button{border:0; background:none; padding:6px 13px; font-weight:600; font-size:15px; cursor:pointer}
 .seg button + button{border-left:4px solid var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--banana)}
+#v-ice .seg button[aria-pressed="true"]{background:#8fdcff}
 
 .hero{text-align:center; padding-top:6px}
 h1{
@@ -253,6 +278,8 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none !important; transition-duration:.01ms !important}
   .critter .lid{transform:scaleY(0)}
+  /* clouds stay put instead of drifting */
+  .c1{left:6%} .c2{left:62%} .c3{left:30%} .c4{left:78%}
 }
 </style>
 </head>
@@ -261,6 +288,35 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
 <!-- ===== scenery: home ===== -->
 <div class="scene scene-home" aria-hidden="true">
   <div class="home-dots"></div>
+  <svg class="seam" viewBox="0 0 40 1000" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="sunG" x1="0" y1="0" x2="0" y2="1000" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#fff4cf"/></linearGradient>
+      <linearGradient id="iceG" x1="0" y1="0" x2="0" y2="1000" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7fd3ff"/><stop offset="1" stop-color="#d9f3ff"/></linearGradient>
+    </defs>
+    <path d="M20 0 Q36 50 20 100 T20 200 T20 300 T20 400 T20 500 T20 600 T20 700 T20 800 T20 900 T20 1000 L0 1000 L0 0Z" fill="url(#sunG)"/>
+    <path d="M20 0 Q36 50 20 100 T20 200 T20 300 T20 400 T20 500 T20 600 T20 700 T20 800 T20 900 T20 1000 L40 1000 L40 0Z" fill="url(#iceG)"/>
+    <path d="M20 0 Q36 50 20 100 T20 200 T20 300 T20 400 T20 500 T20 600 T20 700 T20 800 T20 900 T20 1000" fill="none" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
+  </svg>
+  <svg class="sun" viewBox="0 0 200 200">
+    <g class="rays" fill="#ffa733" stroke="#17284b" stroke-width="5" stroke-linejoin="round">
+      <path d="M100 4 L117 52 H83Z"/>
+      <path d="M100 4 L117 52 H83Z" transform="rotate(45 100 100)"/>
+      <path d="M100 4 L117 52 H83Z" transform="rotate(90 100 100)"/>
+      <path d="M100 4 L117 52 H83Z" transform="rotate(135 100 100)"/>
+      <path d="M100 4 L117 52 H83Z" transform="rotate(180 100 100)"/>
+      <path d="M100 4 L117 52 H83Z" transform="rotate(225 100 100)"/>
+      <path d="M100 4 L117 52 H83Z" transform="rotate(270 100 100)"/>
+      <path d="M100 4 L117 52 H83Z" transform="rotate(315 100 100)"/>
+    </g>
+    <g class="face">
+      <circle cx="100" cy="100" r="56" fill="#ffd23f" stroke="#17284b" stroke-width="6"/>
+      <circle cx="80" cy="92" r="7" fill="#17284b"/><circle cx="120" cy="92" r="7" fill="#17284b"/>
+      <circle cx="82" cy="89" r="2.4" fill="#fff"/><circle cx="122" cy="89" r="2.4" fill="#fff"/>
+      <ellipse cx="68" cy="112" rx="9" ry="6" fill="#ff8fab"/><ellipse cx="132" cy="112" rx="9" ry="6" fill="#ff8fab"/>
+      <path d="M84 114 Q100 132 116 114" fill="none" stroke="#17284b" stroke-width="5" stroke-linecap="round"/>
+    </g>
+  </svg>
+  <div class="clouds"><i class="cloud c1"></i><i class="cloud c2"></i><i class="cloud c3"></i><i class="cloud c4"></i></div>
   <svg class="ground" viewBox="0 0 1440 110" preserveAspectRatio="none">
     <path d="M0 56 Q120 22 240 50 T480 46 T720 60 V110 H0Z" fill="#7ad36f" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
     <path d="M720 60 Q840 30 960 52 T1200 44 T1440 50 V110 H720Z" fill="#fff" stroke="#17284b" stroke-width="5" vector-effect="non-scaling-stroke"/>
@@ -340,7 +396,7 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
         <span class="pet" id="petPenguin"></span>
         <h3>Let me know you more</h3>
         <span class="rec">☕ Recommended for Coffee Date</span>
-        <p class="sub" id="iceSub">Random fun questions across 6 topics, on a snowy ice floe.</p>
+        <p class="sub" id="iceSub">Random fun questions across 6 topics, on a snowy ice floe. Tiếng Việt &amp; English.</p>
         <span class="go">Let’s go</span>
       </button>
     </div>
@@ -363,6 +419,7 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
             <li>Pick a topic that matches your mood.</li>
             <li>Tap Next for a random question. You won’t see a repeat until every question in that topic has come up.</li>
             <li>Change topics whenever the chat needs a new direction.</li>
+            <li>Switch between Tiếng Việt and English anytime, and turn the snow on or off.</li>
           </ol>
         </div>
       </div>
@@ -378,8 +435,8 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
       <button class="chip" type="button" data-home data-t="back"></button>
       <div class="top-r">
         <div class="seg" role="group" aria-label="Language / Ngôn ngữ">
-          <button type="button" id="langVi" lang="vi">🇻🇳 Tiếng Việt</button>
-          <button type="button" id="langEn" lang="en">🇬🇧 English</button>
+          <button type="button" data-lang="vi" lang="vi">🇻🇳 Tiếng Việt</button>
+          <button type="button" data-lang="en" lang="en">🇬🇧 English</button>
         </div>
         <button class="chip" id="rainBtn" type="button" aria-pressed="true"></button>
       </div>
@@ -398,27 +455,31 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
     <p class="ftip" data-t="tip"></p>
   </section>
 
-  <!-- ================= ICE: original ice breaker ================= -->
+  <!-- ================= ICE: let me know you more ================= -->
   <section class="view" id="v-ice" hidden>
     <div class="top">
-      <button class="chip" type="button" data-home>← Modes</button>
+      <button class="chip" type="button" data-home data-t="back"></button>
       <div class="top-r">
-        <button class="chip" id="snowBtn" type="button" aria-pressed="true">❄ Snow: on</button>
+        <div class="seg" role="group" aria-label="Language / Ngôn ngữ">
+          <button type="button" data-lang="vi" lang="vi">🇻🇳 Tiếng Việt</button>
+          <button type="button" data-lang="en" lang="en">🇬🇧 English</button>
+        </div>
+        <button class="chip" id="snowBtn" type="button" aria-pressed="true"></button>
       </div>
     </div>
 
     <div class="hero">
       <h1><span>Ice</span> <span class="b">Breaker</span></h1>
-      <p class="tag">Pick a topic, pull a question, and get everyone talking.</p>
-      <div class="bubble" id="bubble" role="status" aria-live="polite">Hi! Pick a topic and let’s break the ice!</div>
+      <p class="tag" data-t="iceTag"></p>
+      <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
       <div class="critter-wrap" id="heroPenguin" title="Boop!"></div>
       <div class="floe"></div>
     </div>
 
-    <h2 class="label">Choose a topic</h2>
+    <h2 class="label" data-t="chooseTopic"></h2>
     <div class="grid" id="topics"></div>
 
-    <footer><span>Made with ❤️ for fun conversations</span></footer>
+    <footer><span data-t="footer"></span></footer>
   </section>
 </main>
 
@@ -510,179 +571,359 @@ footer span{display:inline-block; padding:8px 20px; background:#fff; border:4px 
 
 <script>
 /* ------------------------------------------------------------------
-   "Let me know you more" question database (unchanged from the original game)
+   "Let me know you more" question database, English
 ------------------------------------------------------------------- */
 const questions = {
-            "Life": [
-                "What book have you read recently that you would recommend and why?",
-                "What's the best gift you've ever received?",
-                "What's the last thing you completed on your bucket list?",
-                "What's the biggest purchase you ever made?",
-                "What show on Netflix did you binge watch embarrassingly fast?",
-                "What activity or sport did you try as a kid and fail at?",
-                "What is one family tradition you would like to carry on in the future?",
-                "What one accomplishment are you most proud of?",
-                "What was your first job?",
-                "Who's someone you really admire?",
-                "What important truth do very few people agree with you on?",
-                "Who in your life inspires you to be better?",
-                "What do the first 30 mins of your typical day look like?",
-                "What's your love language?",
-                "What was the first thing you remember buying with your own money?",
-                "What's your favorite family tradition?",
-                "What book has made the biggest impact on your life?",
-                "Who had the most influence on you growing up?",
-                "What's something you believed earlier in your career but think about differently now?",
-                "What's your favorite board game?",
-                "What's a skill you learned when you were young that you still use today?",
-                "What's your best scare story?",
-                "What was your favorite subject in school?",
-                "What activity do you enjoy so much that it makes you lose track of time?",
-                "When you were younger, what did you want to be when you grew up?",
-            ],
-            "Random": [
-                "What's your dream job if money didn't matter?",
-                "What's the thing you like that creeps other people out?",
-                "Have you been told you look like someone famous, who was it?",
-                "What's the last random thing that made you smile?",
-                "Which piece are you when you play Monopoly?",
-                "What was the last foreign country you visited?",
-                "Which celebrity do you shamelessly follow in the news?",
-                "What would your rap name be?",
-                "What's your most used emoji?",
-                "What's the last thing you bought for under $50 that you love and use often?",
-                "If you have to relive the same day for the rest of your life, which day would you choose?",
-                "Have you had your 15 minutes of fame yet?",
-                "Which season fits your personality?",
-                "What's your guilty pleasure?",
-                "What's something about you that surprises people when they first hear it?",
-                "What's your favorite quote?",
-                "Which famous person have you met?",
-                "If you could have any fictional character as your friend, who would you choose and why?",
-                "Who are three people you want on your team if there was a zombie apocalypse?",
-                "What's the best hotel you've ever stayed in and why?",
-                "You're at a cafe, what type of drink do you order?",
-                "Who would you like to play you in a movie?",
-                "Are you a morning or a night person?",
-                "What's the last product you returned?",
-                "Are you a cat or a dog person?",
-            ],
-            "Deep": [
-                "What was the hardest decision you've ever had to make?",
-                "What's the most illegal thing you've done?",
-                "What is something you think everyone should do at least once in their lives?",
-                "What thing are you most scared to tell your parents?",
-                "What is something you are certain you'll never experience and why?",
-                "What are you most looking forward to in the next 10 years?",
-                "What were the three biggest turning points in your life?",
-                "What mistake do you keep making over and over again?",
-                "What do you believe in despite having no proof of it?",
-                "What are some of your personal rules that you refuse to break?",
-                "How do you get in the way of your own success?",
-                "What stereotype do you completely live up to?",
-                "In what way do you feel your childhood was happier than others?",
-                "What do you regret not doing when you were younger?",
-                "What's the most surprising self-realization you've had?",
-                "If you had to change your name what would you change it to?",
-                "What's something you disagree with about the way you were raised?",
-                "What is a mistake people often make about you?",
-                "When was the last time you cried and why?",
-                "What are you most worried about with the next generation?",
-                "What's something you are self-conscious about?",
-                "What chance encounter changed your life forever?",
-                "What are the top three things on your bucket list?",
-                "What's one thing you did that you wish you could go back and undo?",
-            ],
-            "Experiences": [
-                "What's the first concert you ever went to?",
-                "Describe your worst date ever.",
-                "What's the best thing about the opposite gender?",
-                "What's the best compliment you've ever received?",
-                "What's something you will NEVER do again?",
-                "What's something you did as a child that your parents still retell the story about?",
-                "What's the best advice you've ever received?",
-                "What's one of your pet peeves?",
-                "What's the worst job you've ever had?",
-                "What's the best job you ever had?",
-                "What state or country do you never want to go back to?",
-                "What's the most embarrassing thing that's happened to you during a date?",
-                "What is your worst habit?",
-                "What opportunity for love or money have you given up? Do you regret it now?",
-                "What's your dream car?",
-                "What have you bought that you love so much you would happily buy it again?",
-                "How did you meet your best friend?",
-                "What's the best date you've ever been on?",
-                "Who was your first love and when?",
-                "What's the wildest party you've ever been to?",
-                "What's the first music you bought?",
-                "What was your first car?",
-                "What's your most powerful and vivid memory?",
-                "What was the worst haircut you've ever had?",
-                "Who's the worst boss you've ever had and why?",
-            ],
-            "If you could...": [
-                "If you could change one thing about the way you were raised, what would you change?",
-                "If you could have any celebrity be your best friend, who would it be?",
-                "If you could only eat one meal every day for the rest of your life, what would it be?",
-                "If you could only drink one type of alcohol for the rest of your life, what would you choose?",
-                "If you could be famous, what would you want to be famous for?",
-                "If you could switch places with one of your friends for a day, who would it be?",
-                "If you could go back in time, what one thing would you tell your teenage self?",
-                "If you could create one holiday, what would you create?",
-                "If you could meet any historical figure, who would you choose and why?",
-                "If you could have any superpower, what would you choose?",
-                "If you could live in a sitcom, which one would it be and why?",
-                "If you could get away with a crime, what crime would you commit?",
-                "If you could pick up a skill instantly, what would it be?",
-                "If you could arm wrestle any historical figure, who would you choose and why?",
-                "If you could compete in the Olympics, which sport would you choose?",
-                "If you could only have five apps on your phone, what would they be?",
-                "If you could know when and how you are going to die, would you want to know?",
-                "If you could solve one world problem, what would it be?",
-                "If you could buy your dream house, what is one weird room or feature you would have?",
-                "If you could instantly be an expert in a subject, what would it be?",
-                "If you could write a book, what would it be about?",
-                "If you could never work again, how would you spend your time?",
-                "If you could visit any place in the world, where would it be and why?",
-                "If you could do anything in the next year, what would it be?",
-                "If you could only keep three things from your home, what would you pick and why?"
-            ],
-            "Would you rather...": [
-                "Would you rather not have arms or legs, and why?",
-                "Would you rather win the lottery or live twice as long?",
-                "Would you rather always have gas or always have bad breath?",
-                "Would you rather date someone you love or date someone who loves you?",
-                "Would you rather be slightly late or super early?",
-                "Would you rather watch a movie at home or at the movie theatre?",
-                "Would you rather date someone you met online or go on a blind date?",
-                "Would you rather hear the good news or the bad news?",
-                "Would you rather never read another book or never watch another movie?",
-                "Would you rather be gossiped about or never talked about at all?",
-                "Would you rather win a Grammy or an Oscar?",
-                "Would you rather be proposed to in private or in front of family and friends?",
-                "Would you rather have a cook or a maid?",
-                "Would you rather explore space or the ocean?",
-                "Would you rather be too hot or too cold?",
-                "Would you rather have a rewind or pause button on your life?",
-                "Would you rather live in an apartment in the city or a mansion in the country?",
-                "Would you rather be rich or famous?",
-                "Would you rather be the funniest or smartest person in the room?",
-                "Would you rather be the star player on a losing football team or ride the bench on a winning one?",
-                "Would you rather give up your smartphone or your computer?",
-                "Would you rather experience the beginning of planet earth or the end of planet earth?",
-                "Would you rather end the life of one human or 100 puppies and kittens?",
-                "Would you rather save money or save time?",
-                "Would you rather die before your partner or after?"
-            ]
-        };
+  "Life": [
+    "What book have you read recently that you would recommend and why?",
+    "What's the best gift you've ever received?",
+    "What's the last thing you completed on your bucket list?",
+    "What's the biggest purchase you ever made?",
+    "What show on Netflix did you binge watch embarrassingly fast?",
+    "What activity or sport did you try as a kid and fail at?",
+    "What is one family tradition you would like to carry on in the future?",
+    "What one accomplishment are you most proud of?",
+    "What was your first job?",
+    "Who's someone you really admire?",
+    "What important truth do very few people agree with you on?",
+    "Who in your life inspires you to be better?",
+    "What do the first 30 mins of your typical day look like?",
+    "What's your love language?",
+    "What was the first thing you remember buying with your own money?",
+    "What's your favorite family tradition?",
+    "What book has made the biggest impact on your life?",
+    "Who had the most influence on you growing up?",
+    "What's something you believed earlier in your career but think about differently now?",
+    "What's your favorite board game?",
+    "What's a skill you learned when you were young that you still use today?",
+    "What's your best scare story?",
+    "What was your favorite subject in school?",
+    "What activity do you enjoy so much that it makes you lose track of time?",
+    "When you were younger, what did you want to be when you grew up?"
+  ],
+  "Random": [
+    "What's your dream job if money didn't matter?",
+    "What's the thing you like that creeps other people out?",
+    "Have you been told you look like someone famous, who was it?",
+    "What's the last random thing that made you smile?",
+    "Which piece are you when you play Monopoly?",
+    "What was the last foreign country you visited?",
+    "Which celebrity do you shamelessly follow in the news?",
+    "What would your rap name be?",
+    "What's your most used emoji?",
+    "What's the last thing you bought for under $50 that you love and use often?",
+    "If you have to relive the same day for the rest of your life, which day would you choose?",
+    "Have you had your 15 minutes of fame yet?",
+    "Which season fits your personality?",
+    "What's your guilty pleasure?",
+    "What's something about you that surprises people when they first hear it?",
+    "What's your favorite quote?",
+    "Which famous person have you met?",
+    "If you could have any fictional character as your friend, who would you choose and why?",
+    "Who are three people you want on your team if there was a zombie apocalypse?",
+    "What's the best hotel you've ever stayed in and why?",
+    "You're at a cafe, what type of drink do you order?",
+    "Who would you like to play you in a movie?",
+    "Are you a morning or a night person?",
+    "What's the last product you returned?",
+    "Are you a cat or a dog person?"
+  ],
+  "Deep": [
+    "What was the hardest decision you've ever had to make?",
+    "What's the most illegal thing you've done?",
+    "What is something you think everyone should do at least once in their lives?",
+    "What thing are you most scared to tell your parents?",
+    "What is something you are certain you'll never experience and why?",
+    "What are you most looking forward to in the next 10 years?",
+    "What were the three biggest turning points in your life?",
+    "What mistake do you keep making over and over again?",
+    "What do you believe in despite having no proof of it?",
+    "What are some of your personal rules that you refuse to break?",
+    "How do you get in the way of your own success?",
+    "What stereotype do you completely live up to?",
+    "In what way do you feel your childhood was happier than others?",
+    "What do you regret not doing when you were younger?",
+    "What's the most surprising self-realization you've had?",
+    "If you had to change your name what would you change it to?",
+    "What's something you disagree with about the way you were raised?",
+    "What is a mistake people often make about you?",
+    "When was the last time you cried and why?",
+    "What are you most worried about with the next generation?",
+    "What's something you are self-conscious about?",
+    "What chance encounter changed your life forever?",
+    "What are the top three things on your bucket list?",
+    "What's one thing you did that you wish you could go back and undo?"
+  ],
+  "Experiences": [
+    "What's the first concert you ever went to?",
+    "Describe your worst date ever.",
+    "What's the best thing about the opposite gender?",
+    "What's the best compliment you've ever received?",
+    "What's something you will NEVER do again?",
+    "What's something you did as a child that your parents still retell the story about?",
+    "What's the best advice you've ever received?",
+    "What's one of your pet peeves?",
+    "What's the worst job you've ever had?",
+    "What's the best job you ever had?",
+    "What state or country do you never want to go back to?",
+    "What's the most embarrassing thing that's happened to you during a date?",
+    "What is your worst habit?",
+    "What opportunity for love or money have you given up? Do you regret it now?",
+    "What's your dream car?",
+    "What have you bought that you love so much you would happily buy it again?",
+    "How did you meet your best friend?",
+    "What's the best date you've ever been on?",
+    "Who was your first love and when?",
+    "What's the wildest party you've ever been to?",
+    "What's the first music you bought?",
+    "What was your first car?",
+    "What's your most powerful and vivid memory?",
+    "What was the worst haircut you've ever had?",
+    "Who's the worst boss you've ever had and why?"
+  ],
+  "If you could...": [
+    "If you could change one thing about the way you were raised, what would you change?",
+    "If you could have any celebrity be your best friend, who would it be?",
+    "If you could only eat one meal every day for the rest of your life, what would it be?",
+    "If you could only drink one type of alcohol for the rest of your life, what would you choose?",
+    "If you could be famous, what would you want to be famous for?",
+    "If you could switch places with one of your friends for a day, who would it be?",
+    "If you could go back in time, what one thing would you tell your teenage self?",
+    "If you could create one holiday, what would you create?",
+    "If you could meet any historical figure, who would you choose and why?",
+    "If you could have any superpower, what would you choose?",
+    "If you could live in a sitcom, which one would it be and why?",
+    "If you could get away with a crime, what crime would you commit?",
+    "If you could pick up a skill instantly, what would it be?",
+    "If you could arm wrestle any historical figure, who would you choose and why?",
+    "If you could compete in the Olympics, which sport would you choose?",
+    "If you could only have five apps on your phone, what would they be?",
+    "If you could know when and how you are going to die, would you want to know?",
+    "If you could solve one world problem, what would it be?",
+    "If you could buy your dream house, what is one weird room or feature you would have?",
+    "If you could instantly be an expert in a subject, what would it be?",
+    "If you could write a book, what would it be about?",
+    "If you could never work again, how would you spend your time?",
+    "If you could visit any place in the world, where would it be and why?",
+    "If you could do anything in the next year, what would it be?",
+    "If you could only keep three things from your home, what would you pick and why?"
+  ],
+  "Would you rather...": [
+    "Would you rather not have arms or legs, and why?",
+    "Would you rather win the lottery or live twice as long?",
+    "Would you rather always have gas or always have bad breath?",
+    "Would you rather date someone you love or date someone who loves you?",
+    "Would you rather be slightly late or super early?",
+    "Would you rather watch a movie at home or at the movie theatre?",
+    "Would you rather date someone you met online or go on a blind date?",
+    "Would you rather hear the good news or the bad news?",
+    "Would you rather never read another book or never watch another movie?",
+    "Would you rather be gossiped about or never talked about at all?",
+    "Would you rather win a Grammy or an Oscar?",
+    "Would you rather be proposed to in private or in front of family and friends?",
+    "Would you rather have a cook or a maid?",
+    "Would you rather explore space or the ocean?",
+    "Would you rather be too hot or too cold?",
+    "Would you rather have a rewind or pause button on your life?",
+    "Would you rather live in an apartment in the city or a mansion in the country?",
+    "Would you rather be rich or famous?",
+    "Would you rather be the funniest or smartest person in the room?",
+    "Would you rather be the star player on a losing football team or ride the bench on a winning one?",
+    "Would you rather give up your smartphone or your computer?",
+    "Would you rather experience the beginning of planet earth or the end of planet earth?",
+    "Would you rather end the life of one human or 100 puppies and kittens?",
+    "Would you rather save money or save time?",
+    "Would you rather die before your partner or after?"
+  ]
+};
+
+/* ------------------------------------------------------------------
+   Same questions in Vietnamese. Same order as English, so progress
+   carries over when you switch language.
+------------------------------------------------------------------- */
+const questionsVi = {
+  "Life": [
+    "Gần đây bạn đọc cuốn sách nào muốn giới thiệu cho người khác? Vì sao?",
+    "Món quà tuyệt nhất bạn từng nhận là gì?",
+    "Điều gần nhất bạn đã thực hiện được trong danh sách “những điều phải làm trong đời” là gì?",
+    "Món đồ đắt nhất bạn từng mua là gì?",
+    "Bộ phim nào trên Netflix bạn đã “cày” nhanh đến mức ngại kể?",
+    "Hồi nhỏ bạn từng thử môn thể thao hay hoạt động nào mà thất bại?",
+    "Truyền thống gia đình nào bạn muốn tiếp tục gìn giữ trong tương lai?",
+    "Thành tựu nào khiến bạn tự hào nhất?",
+    "Công việc đầu tiên của bạn là gì?",
+    "Ai là người bạn thật sự ngưỡng mộ?",
+    "Có sự thật quan trọng nào mà rất ít người đồng ý với bạn không?",
+    "Ai trong cuộc sống truyền cảm hứng để bạn trở nên tốt hơn?",
+    "30 phút đầu tiên trong một ngày bình thường của bạn diễn ra thế nào?",
+    "Ngôn ngữ yêu thương của bạn là gì?",
+    "Thứ đầu tiên bạn nhớ mình đã mua bằng tiền tự kiếm là gì?",
+    "Truyền thống gia đình bạn yêu thích nhất là gì?",
+    "Cuốn sách nào ảnh hưởng lớn nhất đến cuộc đời bạn?",
+    "Khi lớn lên, ai là người ảnh hưởng đến bạn nhiều nhất?",
+    "Có điều gì bạn từng tin khi mới đi làm nhưng giờ đã nghĩ khác?",
+    "Board game yêu thích của bạn là gì?",
+    "Kỹ năng nào bạn học từ nhỏ mà đến giờ vẫn dùng?",
+    "Câu chuyện đáng sợ nhất mà bạn từng trải qua là gì?",
+    "Hồi đi học bạn thích môn nào nhất?",
+    "Hoạt động nào khiến bạn say mê đến quên cả thời gian?",
+    "Hồi nhỏ bạn mơ ước lớn lên sẽ làm nghề gì?"
+  ],
+  "Random": [
+    "Nếu không phải lo chuyện tiền bạc, công việc mơ ước của bạn là gì?",
+    "Bạn thích thứ gì mà người khác thấy hơi rợn?",
+    "Đã có ai nói bạn giống người nổi tiếng nào chưa? Đó là ai?",
+    "Điều ngẫu nhiên gần nhất khiến bạn mỉm cười là gì?",
+    "Khi chơi Cờ tỷ phú, bạn hay chọn quân nào?",
+    "Nước ngoài gần nhất bạn đã đến là đâu?",
+    "Bạn “hóng” tin tức của người nổi tiếng nào mà không hề ngại?",
+    "Nếu làm rapper, nghệ danh của bạn sẽ là gì?",
+    "Emoji bạn dùng nhiều nhất là gì?",
+    "Món đồ gần nhất bạn mua dưới 500 nghìn mà rất thích và dùng thường xuyên là gì?",
+    "Nếu phải sống lại cùng một ngày mãi mãi, bạn sẽ chọn ngày nào?",
+    "Bạn đã có “15 phút nổi tiếng” của mình chưa?",
+    "Mùa nào hợp với tính cách của bạn nhất?",
+    "Thú vui “tội lỗi” của bạn là gì?",
+    "Điều gì về bạn khiến người khác bất ngờ khi lần đầu nghe kể?",
+    "Câu nói yêu thích của bạn là gì?",
+    "Bạn đã từng gặp người nổi tiếng nào?",
+    "Nếu được kết bạn với một nhân vật hư cấu, bạn chọn ai? Vì sao?",
+    "Nếu có đại dịch zombie, bạn muốn ba người nào ở trong đội của mình?",
+    "Khách sạn tuyệt nhất bạn từng ở là đâu? Vì sao?",
+    "Ngồi ở quán cà phê, bạn thường gọi đồ uống gì?",
+    "Nếu cuộc đời bạn được dựng thành phim, bạn muốn ai đóng vai mình?",
+    "Bạn là người dậy sớm hay cú đêm?",
+    "Món đồ gần nhất bạn mua rồi trả lại là gì?",
+    "Bạn thích mèo hay thích chó hơn?"
+  ],
+  "Deep": [
+    "Quyết định khó khăn nhất bạn từng phải đưa ra là gì?",
+    "Điều “phạm luật” nhất bạn từng làm là gì?",
+    "Theo bạn, điều gì ai cũng nên làm ít nhất một lần trong đời?",
+    "Điều gì bạn sợ nói với bố mẹ nhất?",
+    "Điều gì bạn chắc chắn mình sẽ không bao giờ trải qua? Vì sao?",
+    "Bạn mong chờ điều gì nhất trong 10 năm tới?",
+    "Ba bước ngoặt lớn nhất trong cuộc đời bạn là gì?",
+    "Sai lầm nào bạn cứ mắc đi mắc lại?",
+    "Bạn tin vào điều gì dù không có bằng chứng?",
+    "Những nguyên tắc cá nhân nào bạn nhất định không phá vỡ?",
+    "Bạn tự cản trở thành công của chính mình theo cách nào?",
+    "Có định kiến nào về một kiểu người mà bạn đúng y như vậy không?",
+    "Bạn thấy tuổi thơ mình hạnh phúc hơn người khác ở điểm nào?",
+    "Bạn tiếc điều gì vì đã không làm khi còn trẻ?",
+    "Điều bất ngờ nhất bạn từng nhận ra về bản thân là gì?",
+    "Nếu phải đổi tên, bạn sẽ đổi thành tên gì?",
+    "Bạn không đồng tình với điều gì trong cách mình được nuôi dạy?",
+    "Mọi người thường hiểu lầm điều gì về bạn?",
+    "Lần gần nhất bạn khóc là khi nào? Vì sao?",
+    "Bạn lo lắng nhất điều gì về thế hệ sau?",
+    "Bạn tự ti về điều gì?",
+    "Cuộc gặp gỡ tình cờ nào đã thay đổi cuộc đời bạn mãi mãi?",
+    "Ba điều đứng đầu danh sách “những điều phải làm trong đời” của bạn là gì?",
+    "Có việc gì bạn đã làm và ước có thể quay ngược thời gian để không làm không?"
+  ],
+  "Experiences": [
+    "Buổi hòa nhạc đầu tiên bạn từng đi là của ai?",
+    "Kể về buổi hẹn hò tệ nhất của bạn.",
+    "Điều tuyệt nhất ở người khác giới là gì?",
+    "Lời khen tuyệt nhất bạn từng nhận là gì?",
+    "Điều gì bạn sẽ KHÔNG BAO GIỜ làm lại?",
+    "Hồi nhỏ bạn đã làm gì mà đến giờ bố mẹ vẫn hay kể lại?",
+    "Lời khuyên hay nhất bạn từng nhận là gì?",
+    "Điều gì nhỏ nhặt nhưng khiến bạn khó chịu?",
+    "Công việc tệ nhất bạn từng làm là gì?",
+    "Công việc tốt nhất bạn từng làm là gì?",
+    "Nơi nào bạn không bao giờ muốn quay lại?",
+    "Chuyện xấu hổ nhất từng xảy ra với bạn trong một buổi hẹn hò là gì?",
+    "Thói quen xấu nhất của bạn là gì?",
+    "Bạn đã từng từ bỏ cơ hội nào vì tình hay vì tiền? Giờ bạn có hối tiếc không?",
+    "Chiếc xe mơ ước của bạn là gì?",
+    "Món đồ nào bạn thích đến mức sẵn sàng mua lại lần nữa?",
+    "Bạn quen bạn thân của mình như thế nào?",
+    "Buổi hẹn hò tuyệt nhất bạn từng có là gì?",
+    "Mối tình đầu của bạn là ai, vào lúc nào?",
+    "Bữa tiệc “quẩy” nhất bạn từng tham gia là gì?",
+    "Album hay bài hát đầu tiên bạn bỏ tiền mua là gì?",
+    "Chiếc xe đầu tiên của bạn là gì?",
+    "Ký ức mạnh mẽ và rõ nét nhất của bạn là gì?",
+    "Kiểu tóc tệ nhất bạn từng có là gì?",
+    "Người sếp tệ nhất bạn từng gặp là ai? Vì sao?"
+  ],
+  "If you could...": [
+    "Nếu có thể thay đổi một điều trong cách bạn được nuôi dạy, bạn sẽ thay đổi điều gì?",
+    "Nếu được làm bạn thân với một người nổi tiếng, bạn chọn ai?",
+    "Nếu chỉ được ăn một món mỗi ngày đến hết đời, bạn chọn món gì?",
+    "Nếu chỉ được uống một loại đồ uống có cồn đến hết đời, bạn chọn loại nào?",
+    "Nếu được nổi tiếng, bạn muốn nổi tiếng vì điều gì?",
+    "Nếu được đổi chỗ với một người bạn trong một ngày, bạn chọn ai?",
+    "Nếu được quay về quá khứ, bạn sẽ nói điều gì với bản thân thời niên thiếu?",
+    "Nếu được tạo ra một ngày lễ, đó sẽ là ngày lễ gì?",
+    "Nếu được gặp một nhân vật lịch sử, bạn chọn ai? Vì sao?",
+    "Nếu được sở hữu một siêu năng lực, bạn chọn năng lực gì?",
+    "Nếu được sống trong một bộ phim sitcom, bạn chọn phim nào? Vì sao?",
+    "Nếu phạm tội mà chắc chắn không bị phát hiện, bạn sẽ làm gì?",
+    "Nếu có thể học ngay lập tức một kỹ năng, đó sẽ là gì?",
+    "Nếu được vật tay với một nhân vật lịch sử, bạn chọn ai? Vì sao?",
+    "Nếu được thi đấu ở Thế vận hội, bạn chọn môn nào?",
+    "Nếu điện thoại chỉ được có năm ứng dụng, bạn giữ những ứng dụng nào?",
+    "Nếu có thể biết trước mình sẽ ra đi khi nào và như thế nào, bạn có muốn biết không?",
+    "Nếu được giải quyết một vấn đề của thế giới, bạn chọn vấn đề gì?",
+    "Nếu được mua ngôi nhà mơ ước, bạn sẽ thêm căn phòng hay chi tiết kỳ quặc nào?",
+    "Nếu có thể trở thành chuyên gia trong một lĩnh vực ngay lập tức, đó sẽ là lĩnh vực gì?",
+    "Nếu được viết một cuốn sách, bạn sẽ viết về điều gì?",
+    "Nếu không bao giờ phải đi làm nữa, bạn sẽ dành thời gian thế nào?",
+    "Nếu được đến bất kỳ nơi nào trên thế giới, bạn chọn đâu? Vì sao?",
+    "Nếu được làm bất cứ điều gì trong năm tới, bạn sẽ làm gì?",
+    "Nếu chỉ được giữ ba món đồ trong nhà, bạn chọn gì? Vì sao?"
+  ],
+  "Would you rather...": [
+    "Bạn thà không có tay hay không có chân? Vì sao?",
+    "Bạn muốn trúng xổ số hay sống lâu gấp đôi?",
+    "Bạn thà lúc nào cũng xì hơi hay lúc nào cũng hôi miệng?",
+    "Bạn muốn hẹn hò với người mình yêu hay người yêu mình?",
+    "Bạn thà đến muộn một chút hay đến quá sớm?",
+    "Bạn thích xem phim ở nhà hay ở rạp?",
+    "Bạn muốn hẹn hò với người quen qua mạng hay đi xem mắt?",
+    "Bạn muốn nghe tin tốt hay tin xấu trước?",
+    "Bạn thà không bao giờ đọc sách nữa hay không bao giờ xem phim nữa?",
+    "Bạn thà bị người ta bàn tán hay chẳng ai nhắc đến mình?",
+    "Bạn muốn đoạt giải Grammy hay giải Oscar?",
+    "Bạn muốn được cầu hôn riêng tư hay trước mặt gia đình, bạn bè?",
+    "Bạn muốn có đầu bếp riêng hay người giúp việc dọn nhà?",
+    "Bạn muốn khám phá vũ trụ hay đại dương?",
+    "Bạn thà bị nóng quá hay lạnh quá?",
+    "Bạn muốn cuộc đời có nút tua lại hay nút tạm dừng?",
+    "Bạn muốn sống trong căn hộ ở thành phố hay biệt thự ở nông thôn?",
+    "Bạn muốn giàu có hay nổi tiếng?",
+    "Bạn muốn là người hài hước nhất hay thông minh nhất trong phòng?",
+    "Bạn muốn làm ngôi sao của một đội bóng toàn thua, hay ngồi dự bị ở một đội toàn thắng?",
+    "Bạn thà bỏ điện thoại hay bỏ máy tính?",
+    "Bạn muốn chứng kiến sự khởi đầu hay sự kết thúc của Trái Đất?",
+    "Bạn thà kết thúc sự sống của một người hay của 100 chú chó mèo con?",
+    "Bạn muốn tiết kiệm tiền hay tiết kiệm thời gian?",
+    "Bạn muốn ra đi trước hay sau người bạn đời?"
+  ]
+};
 
 const topics = [
-  {key:"Life",                emoji:"🌟", color:"#ff9ebd", desc:"Personal questions to get to know you better"},
-  {key:"Random",              emoji:"🎲", color:"#ffd45e", desc:"Random questions to lighten the mood"},
-  {key:"Deep",                emoji:"🧠", color:"#b4a7ff", desc:"Philosophical questions to spark discussion"},
-  {key:"Experiences",         emoji:"🎒", color:"#7ee8b5", desc:"Questions about your most memorable moments"},
-  {key:"If you could...",     emoji:"🪄", color:"#ffaa72", desc:"Imaginative “If you could…” scenarios"},
-  {key:"Would you rather...", emoji:"⚖️", color:"#6ccfff", desc:"Tough “Would you rather…” choices"}
+  {key:"Life",                emoji:"🌟", color:"#ff9ebd",
+   name:{en:"Life", vi:"Cuộc sống"},
+   desc:{en:"Personal questions to get to know you better", vi:"Câu hỏi cá nhân để hiểu nhau hơn"}},
+  {key:"Random",              emoji:"🎲", color:"#ffd45e",
+   name:{en:"Random", vi:"Ngẫu nhiên"},
+   desc:{en:"Random questions to lighten the mood", vi:"Câu hỏi ngẫu hứng cho không khí thêm vui"}},
+  {key:"Deep",                emoji:"🧠", color:"#b4a7ff",
+   name:{en:"Deep", vi:"Sâu sắc"},
+   desc:{en:"Philosophical questions to spark discussion", vi:"Câu hỏi triết lý để mở ra cuộc thảo luận"}},
+  {key:"Experiences",         emoji:"🎒", color:"#7ee8b5",
+   name:{en:"Experiences", vi:"Trải nghiệm"},
+   desc:{en:"Questions about your most memorable moments", vi:"Câu hỏi về những khoảnh khắc đáng nhớ nhất"}},
+  {key:"If you could...",     emoji:"🪄", color:"#ffaa72",
+   name:{en:"If you could...", vi:"Nếu bạn có thể..."},
+   desc:{en:"Imaginative “If you could…” scenarios", vi:"Những tình huống tưởng tượng “Nếu bạn có thể…”"}},
+  {key:"Would you rather...", emoji:"⚖️", color:"#6ccfff",
+   name:{en:"Would you rather...", vi:"Bạn sẽ chọn..."},
+   desc:{en:"Tough “Would you rather…” choices", vi:"Những lựa chọn khó “Bạn sẽ chọn…”"}}
 ];
 
 /* ------------------------------------------------------------------
@@ -811,7 +1052,20 @@ const UI = {
     levelUp:n => "Lên Vòng " + n + "! Câu hỏi sẽ sâu hơn một chút 🌿",
     fresh:"Bắt đầu lại vòng này 🌱",
     finished:"Tuyệt vời! Hai bạn đã đi hết 36 câu 🎉 Thử nhìn vào mắt nhau 4 phút xem sao 👀",
-    quips:["Ú òa! Chọn một vòng nào! 🍌","Đừng ngại, ai cũng từng là người lạ mà!","Nghe tiếng mưa rừng thật thư giãn ☔","Mẹo nhỏ: lắng nghe nhiều hơn nói nhé 👂","Ối, nhột quá! 🐒"]
+    quips:["Ú òa! Chọn một vòng nào! 🍌","Đừng ngại, ai cũng từng là người lạ mà!","Nghe tiếng mưa rừng thật thư giãn ☔","Mẹo nhỏ: lắng nghe nhiều hơn nói nhé 👂","Ối, nhột quá! 🐒"],
+    /* penguin mode */
+    snowOn:"❄ Tuyết: bật", snowOff:"❄ Tuyết: tắt",
+    iceTag:"Chọn chủ đề, rút một câu hỏi và cùng nhau trò chuyện.",
+    iceHello:"Chào bạn! Chọn một chủ đề để phá băng nào!",
+    chooseTopic:"Chọn chủ đề", footer:"Làm với ❤️ cho những cuộc trò chuyện vui",
+    nQ:n => n + " câu hỏi", nSeen:s => " · đã xem " + s,
+    seenOf:(s,n) => "Đã xem " + s + " / " + n,
+    allSeen:n => "Bạn đã xem hết " + n + " câu! Bắt đầu một vòng ngẫu nhiên mới 🔀",
+    iceFresh:"Làm mới rồi! 🎲",
+    pickTopic:"Chọn chủ đề khác", restartTopic:"↺ Chơi lại chủ đề này",
+    prevQ:"Câu trước", closeTopic:"Đóng và chọn chủ đề khác",
+    pQuips:["Lạch bạch lạch bạch! Chọn chủ đề đi nào!","Rất vui được gặp bạn! 🧊","Brrr! Làm ấm lên bằng một câu hỏi nhé.",
+            "Bạn có biết? Có loài chim cánh cụt tặng sỏi để cầu hôn. 🪨","Ối, nhột quá!","Bắt đầu trò chuyện thôi!"]
   },
   en:{
     back:"← Modes", rainOn:"🌧 Rain: on", rainOff:"🌧 Rain: off",
@@ -827,7 +1081,20 @@ const UI = {
     levelUp:n => "Level " + n + "! Things get a little deeper now 🌿",
     fresh:"Level restarted 🌱",
     finished:"Amazing! You finished all 36 questions 🎉 Now try looking into each other’s eyes for 4 minutes 👀",
-    quips:["Ooh ooh! Pick a level! 🍌","Don’t be shy, everyone starts as a stranger!","Rainforest rain is so relaxing ☔","Tiny tip: listen more than you talk 👂","Boop! That tickles! 🐒"]
+    quips:["Ooh ooh! Pick a level! 🍌","Don’t be shy, everyone starts as a stranger!","Rainforest rain is so relaxing ☔","Tiny tip: listen more than you talk 👂","Boop! That tickles! 🐒"],
+    /* penguin mode */
+    snowOn:"❄ Snow: on", snowOff:"❄ Snow: off",
+    iceTag:"Pick a topic, pull a question, and get everyone talking.",
+    iceHello:"Hi! Pick a topic and let’s break the ice!",
+    chooseTopic:"Choose a topic", footer:"Made with ❤️ for fun conversations",
+    nQ:n => n + " questions", nSeen:s => " · " + s + " seen",
+    seenOf:(s,n) => "Seen " + s + " of " + n,
+    allSeen:n => "You’ve seen all " + n + "! Starting a fresh random round 🔀",
+    iceFresh:"Fresh start! 🎲",
+    pickTopic:"Pick another topic", restartTopic:"↺ Start this topic over",
+    prevQ:"Previous question", closeTopic:"Close and pick another topic",
+    pQuips:["Waddle waddle! Pick a topic!","Ice to meet you! 🧊","Brrr! Warm up with a question.",
+            "Did you know? Some penguins propose with a pebble. 🪨","Boop! That tickles!","Let’s get this chat rolling!"]
   }
 };
 
@@ -835,7 +1102,25 @@ const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const app = $("#app"), overlay = $("#overlay"), stage = $("#stage");
 const bubble = $("#bubble"), fBubble = $("#fBubble");
-const HELLO = "Hi! Pick a topic and let’s break the ice!";
+
+/* ---------- shared language state (both modes) ---------- */
+const FSTORE = "iceBreaker36.v1";
+let fs = {lang:"vi", done:[false, false, false]};
+try {
+  const s = JSON.parse(localStorage.getItem(FSTORE));
+  if (s){
+    if (s.lang === "vi" || s.lang === "en") fs.lang = s.lang;
+    if (Array.isArray(s.done)) fs.done = [0, 1, 2].map(i => !!s.done[i]);
+  }
+} catch (e) {}
+function fsave(){ try { localStorage.setItem(FSTORE, JSON.stringify(fs)); } catch (e) {} }
+const T = () => UI[fs.lang];
+
+/* questions for a topic in the current language (falls back to English if a list is incomplete) */
+function qList(key){
+  const en = questions[key] || [], vi = questionsVi[key];
+  return (fs.lang === "vi" && vi && vi.length === en.length) ? vi : en;
+}
 
 /* ---------- critters ---------- */
 function mount(sel, tplId){
@@ -859,17 +1144,13 @@ function play(el, cls){
 }
 function say(el, text){ el.textContent = text; play(el, "say"); }
 
-const quips = [
-  "Waddle waddle! Pick a topic!", "Ice to meet you! 🧊", "Brrr! Warm up with a question.",
-  "Did you know? Some penguins propose with a pebble. 🪨", "Boop! That tickles!", "Let’s get this chat rolling!"
-];
 let quipI = 0, mQuipI = 0;
-$("#heroPenguin").addEventListener("click", () => { play(heroSvg, "happy"); say(bubble, quips[quipI++ % quips.length]); });
+$("#heroPenguin").addEventListener("click", () => { const q = T().pQuips; play(heroSvg, "happy"); say(bubble, q[quipI++ % q.length]); });
 $("#heroMonkey").addEventListener("click", () => { const q = T().quips; play(monkeySvg, "happy"); say(fBubble, q[mQuipI++ % q.length]); });
 
 /* ---------- home: mode cards ---------- */
 const totalIce = Object.values(questions).reduce((a, l) => a + l.length, 0);
-$("#iceSub").textContent = totalIce + " random fun questions across " + topics.length + " topics, on a snowy ice floe.";
+$("#iceSub").textContent = totalIce + " random fun questions across " + topics.length + " topics, on a snowy ice floe. Tiếng Việt & English.";
 $("#modeForest").addEventListener("click", () => { location.hash = "forest"; });
 $("#modeIce").addEventListener("click", () => { location.hash = "ice"; });
 $("#modeForest").addEventListener("pointerenter", () => play(petMonk, "happy"));
@@ -879,45 +1160,49 @@ document.querySelectorAll("[data-home]").forEach(b => b.addEventListener("click"
 }));
 
 /* ---------- ice: topic cards ---------- */
-const grid = $("#topics"), cards = {};
-topics.forEach((t, i) => {
-  const b = document.createElement("button");
-  b.type = "button"; b.className = "topic";
-  b.style.setProperty("--c", t.color); b.style.setProperty("--i", i);
-  b.innerHTML = '<span class="emoji" aria-hidden="true">' + t.emoji + '</span><h3></h3><p></p><span class="count"></span>';
-  b.querySelector("h3").textContent = t.key;
-  b.querySelector("p").textContent = t.desc;
-  cards[t.key] = b.querySelector(".count");
-  b.addEventListener("click", () => start(t, b));
-  b.addEventListener("pointerenter", () => say(bubble, t.desc + "!"));
-  b.addEventListener("focus", () => say(bubble, t.desc + "!"));
-  b.addEventListener("pointerleave", () => say(bubble, HELLO));
-  grid.appendChild(b);
-});
-
-/* ---------- ice: game state ---------- */
-const STORE = "iceBreakerSeen.v1";
-let seen = {};
-try { seen = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { seen = {}; }
-function save(){ try { localStorage.setItem(STORE, JSON.stringify(seen)); } catch (e) {} }
-function seenOf(key){
-  const valid = new Set(questions[key] || []);
-  seen[key] = (Array.isArray(seen[key]) ? seen[key] : []).filter(q => valid.has(q));
-  return seen[key];
+const grid = $("#topics");
+let cards = {};
+function renderTopics(){
+  const lang = fs.lang;
+  grid.innerHTML = ""; cards = {};
+  topics.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "topic";
+    b.style.setProperty("--c", t.color); b.style.setProperty("--i", i);
+    b.innerHTML = '<span class="emoji" aria-hidden="true">' + t.emoji + '</span><h3></h3><p></p><span class="count"></span>';
+    b.querySelector("h3").textContent = t.name[lang];
+    b.querySelector("p").textContent = t.desc[lang];
+    cards[t.key] = b.querySelector(".count");
+    b.addEventListener("click", () => start(t, b));
+    b.addEventListener("pointerenter", () => say(bubble, t.desc[fs.lang] + "!"));
+    b.addEventListener("focus", () => say(bubble, t.desc[fs.lang] + "!"));
+    b.addEventListener("pointerleave", () => say(bubble, T().iceHello));
+    grid.appendChild(b);
+  });
+  updateCounts();
 }
 
-/* ---------- forest: state ---------- */
-const FSTORE = "iceBreaker36.v1";
-let fs = {lang:"vi", done:[false, false, false]};
-try {
-  const s = JSON.parse(localStorage.getItem(FSTORE));
-  if (s){
-    if (s.lang === "vi" || s.lang === "en") fs.lang = s.lang;
-    if (Array.isArray(s.done)) fs.done = [0, 1, 2].map(i => !!s.done[i]);
-  }
-} catch (e) {}
-function fsave(){ try { localStorage.setItem(FSTORE, JSON.stringify(fs)); } catch (e) {} }
-const T = () => UI[fs.lang];
+/* ---------- ice: game state (stores question numbers, so it works in both languages) ---------- */
+const STORE = "iceBreakerSeen.v2";
+let seen = null;
+try { seen = JSON.parse(localStorage.getItem(STORE)); } catch (e) { seen = null; }
+if (!seen || typeof seen !== "object"){
+  seen = {};
+  /* carry over progress saved by the older English-only version */
+  try {
+    const old = JSON.parse(localStorage.getItem("iceBreakerSeen.v1")) || {};
+    Object.keys(old).forEach(k => {
+      if (questions[k] && Array.isArray(old[k])) seen[k] = old[k].map(q => questions[k].indexOf(q)).filter(i => i >= 0);
+    });
+  } catch (e) {}
+}
+function save(){ try { localStorage.setItem(STORE, JSON.stringify(seen)); } catch (e) {} }
+function seenOf(key){
+  const n = (questions[key] || []).length;
+  const list = Array.isArray(seen[key]) ? seen[key] : [];
+  seen[key] = list.filter((i, j) => Number.isInteger(i) && i >= 0 && i < n && list.indexOf(i) === j);
+  return seen[key];
+}
 
 /* ---------- shared overlay ---------- */
 let mode = "ice", view = "home";
@@ -938,51 +1223,58 @@ function openOverlay(){
 
 /* ice mode */
 function pick(){
-  const all = questions[cur.key] || [], s = seenOf(cur.key);
-  let pool = all.filter(q => !s.includes(q)), reset = false;
+  const n = (questions[cur.key] || []).length, s = seenOf(cur.key);
+  const all = Array.from({length: n}, (_, i) => i);
+  let pool = all.filter(i => !s.includes(i)), reset = false;
   if (!pool.length){
     const last = s[s.length - 1];
     seen[cur.key] = []; reset = true;
-    pool = all.filter(q => q !== last);
+    pool = all.filter(i => i !== last);
     if (!pool.length) pool = all.slice();
   }
-  const q = pool[Math.floor(Math.random() * pool.length)];
-  seen[cur.key].push(q); save();
-  return {q, reset, total: all.length};
+  const i = pool[Math.floor(Math.random() * pool.length)];
+  seen[cur.key].push(i); save();
+  return {i, reset, total: n};
 }
 function updateCounts(){
-  topics.forEach(t => {
-    const el = cards[t.key]; if (!el) return;
-    const n = (questions[t.key] || []).length, s = seenOf(t.key).length;
-    el.textContent = n + " questions" + (s ? " · " + s + " seen" : "");
+  const t = T();
+  topics.forEach(tp => {
+    const el = cards[tp.key]; if (!el) return;
+    const n = (questions[tp.key] || []).length, s = seenOf(tp.key).length;
+    el.textContent = t.nQ(n) + (s ? t.nSeen(s) : "");
   });
 }
-function render(){
-  const n = (questions[cur.key] || []).length, s = seenOf(cur.key).length;
-  qText.textContent = hist[pos];
-  counter.textContent = "Seen " + s + " of " + n;
+function iLabels(){
+  const t = T();
+  qPill.textContent = cur.emoji + "  " + cur.name[fs.lang];
+  prevBtn.textContent = t.prev; nextBtn.textContent = t.next;
+  prevBtn.setAttribute("aria-label", t.prevQ);
+  backBtn.textContent = t.pickTopic; resetBtn.textContent = t.restartTopic;
+  langMini.textContent = t.switchLang;
+  hint.textContent = t.hint; closeBtn.setAttribute("aria-label", t.closeTopic);
+}
+function render(anim = true){
+  const n = (questions[cur.key] || []).length, s = seenOf(cur.key).length, idx = hist[pos];
+  qText.textContent = qList(cur.key)[idx] || questions[cur.key][idx];
+  counter.textContent = T().seenOf(s, n);
   bar.style.width = (s / n * 100) + "%";
   prevBtn.disabled = pos <= 0;
-  swapAnim(peekSvg);
+  iLabels();
+  if (anim) swapAnim(peekSvg);
 }
 function start(t, from){
   mode = "ice"; stage.dataset.mode = "ice";
   cur = t; opener = from; hist = []; pos = -1;
   stage.style.setProperty("--c", t.color);
-  qPill.textContent = t.emoji + "  " + t.key;
-  prevBtn.textContent = "← Prev"; nextBtn.textContent = "Next →";
-  prevBtn.setAttribute("aria-label", "Previous question");
-  backBtn.textContent = "Pick another topic"; resetBtn.textContent = "↺ Start this topic over";
-  hint.textContent = "Tip: use ← → keys, Esc to close"; closeBtn.setAttribute("aria-label", "Close and pick another topic");
-  langMini.hidden = true;
+  langMini.hidden = false;
   iceNext(); openOverlay();
 }
 function iceNext(){
   note.textContent = "";
   if (pos < hist.length - 1){ pos++; }
   else {
-    const r = pick(); hist.push(r.q); pos++;
-    if (r.reset) note.textContent = "You’ve seen all " + r.total + "! Starting a fresh random round 🔀";
+    const r = pick(); hist.push(r.i); pos++;
+    if (r.reset) note.textContent = T().allSeen(r.total);
   }
   render();
 }
@@ -1035,18 +1327,18 @@ function startOver(){
   if (mode === "forest"){ lpos = 0; fRender(); note.textContent = T().fresh; return; }
   if (!cur) return;
   seen[cur.key] = []; save(); hist = []; pos = -1;
-  iceNext(); note.textContent = "Fresh start! 🎲";
+  iceNext(); note.textContent = T().iceFresh;
 }
 function close(silent){
   if (!overlay.classList.contains("open")) return;
   overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true"); app.inert = false;
   if (silent) return;
-  if (opener) opener.focus({preventScroll:true});
+  if (opener && opener.isConnected) opener.focus({preventScroll:true});
   if (mode === "forest"){
     renderLevels(); play(monkeySvg, "happy");
     say(fBubble, justFinished ? T().finished : T().hello); justFinished = false;
   } else {
-    updateCounts(); play(heroSvg, "happy"); say(bubble, HELLO);
+    updateCounts(); play(heroSvg, "happy"); say(bubble, T().iceHello);
   }
 }
 
@@ -1085,7 +1377,7 @@ document.addEventListener("keydown", e => {
   }
 });
 
-/* ---------- forest: level cards + language ---------- */
+/* ---------- forest: level cards ---------- */
 const levelGrid = $("#levels");
 function renderLevels(){
   const t = T();
@@ -1108,22 +1400,28 @@ function renderLevels(){
     levelGrid.appendChild(b);
   });
 }
+
+/* ---------- language (shared by both modes) ---------- */
 function applyLang(){
   const t = T();
-  document.querySelectorAll("#v-forest [data-t]").forEach(el => { el.textContent = t[el.dataset.t]; });
-  $("#langVi").setAttribute("aria-pressed", String(fs.lang === "vi"));
-  $("#langEn").setAttribute("aria-pressed", String(fs.lang === "en"));
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = t[el.dataset.t]; });
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === fs.lang)));
   rainBtn.textContent = rainOn ? t.rainOn : t.rainOff;
-  document.documentElement.lang = view === "forest" ? fs.lang : "en";
-  renderLevels();
+  snowBtn.textContent = snowOn ? t.snowOn : t.snowOff;
+  document.documentElement.lang = view === "home" ? "en" : fs.lang;
+  renderLevels(); renderTopics();
 }
 function setLang(l){
   fs.lang = l; fsave(); applyLang();
-  say(fBubble, T().hello);
-  if (overlay.classList.contains("open") && mode === "forest") fRender();
+  if (view === "forest") say(fBubble, T().hello);
+  if (view === "ice") say(bubble, T().iceHello);
+  if (overlay.classList.contains("open")){
+    note.textContent = "";
+    if (mode === "forest") fRender();
+    else if (cur) render();
+  }
 }
-$("#langVi").addEventListener("click", () => setLang("vi"));
-$("#langEn").addEventListener("click", () => setLang("en"));
+document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
 
 /* ---------- snow ---------- */
 const cv = $("#snow"), ctx = cv.getContext("2d"), snowBtn = $("#snowBtn");
@@ -1144,7 +1442,7 @@ function snowTick(){
 }
 snowBtn.addEventListener("click", () => {
   snowOn = !snowOn; snowBtn.setAttribute("aria-pressed", String(snowOn));
-  snowBtn.textContent = snowOn ? "❄ Snow: on" : "❄ Snow: off"; runEffects();
+  snowBtn.textContent = snowOn ? T().snowOn : T().snowOff; runEffects();
 });
 
 /* ---------- rain ---------- */
@@ -1203,18 +1501,17 @@ function route(){
   close(true);
   view = v; document.body.dataset.view = v;
   ["home", "forest", "ice"].forEach(k => { $("#v-" + k).hidden = k !== v; });
-  document.documentElement.lang = v === "forest" ? fs.lang : "en";
+  document.documentElement.lang = v === "home" ? "en" : fs.lang;
   scrollTo(0, 0);
   runEffects();
   if (v === "forest"){ applyLang(); say(fBubble, T().hello); play(monkeySvg, "happy"); }
-  if (v === "ice"){ updateCounts(); say(bubble, HELLO); play(heroSvg, "happy"); }
+  if (v === "ice"){ applyLang(); say(bubble, T().iceHello); play(heroSvg, "happy"); }
 }
 addEventListener("hashchange", route);
 
 rainBtn.setAttribute("aria-pressed", String(rainOn));
 snowBtn.setAttribute("aria-pressed", String(snowOn));
-snowBtn.textContent = snowOn ? "❄ Snow: on" : "❄ Snow: off";
-resize(); applyLang(); updateCounts(); route();
+resize(); applyLang(); route();
 </script>
 </body>
 </html>
